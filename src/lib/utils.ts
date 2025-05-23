@@ -1,19 +1,6 @@
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+// このファイルはutils/index.tsへ移行されています
+// 後方互換性のためのリダイレクト
+import { cn, formatDate, absoluteUrl } from "./utils/index";
 
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
-
-export function formatDate(input: string | number | Date): string {
-  const date = new Date(input);
-  return date.toLocaleDateString("ja-JP", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-export function absoluteUrl(path: string) {
-  return `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}${path}`;
-}
+// 既存の関数をそのまま再エクスポート
+export { cn, formatDate, absoluteUrl };

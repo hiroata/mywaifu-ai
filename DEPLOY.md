@@ -70,6 +70,43 @@ Google Cloud ConsoleでOAuthアプリケーションの設定を開き、以下�
 https://shakedude.com/api/auth/callback/google
 ```
 
+## 2. SSH/SFTP経由のデプロイ設定（推奨）
+
+FTP接続に問題がある場合、SSH/SFTP経由でのデプロイが推奨されます。以下のGitHub Secretsを設定してください：
+
+- `SSH_HOST`: ssh.lolipop.jp
+- `SSH_USERNAME`: main.jp-3385b51a75b81a95
+- `SSH_PASSWORD`: kVy9oUqa5AXR6Z0Jb70Vue5xlmSGCh2M
+- `SSH_PORT`: 2222
+- `SSH_DEPLOY_PATH`: /home/users/2/main.jp-3385b51a75b81a95/web/shakedude
+
+### 2-1. SSH/SFTP設定のワークフロー
+
+```yaml
+- name: Deploy via SSH
+  uses: appleboy/ssh-action@master
+  with:
+    host: ${{ secrets.SSH_HOST }}
+    username: ${{ secrets.SSH_USERNAME }}
+    password: ${{ secrets.SSH_PASSWORD }}
+    port: ${{ secrets.SSH_PORT }}
+    script: |
+      # 古いファイルを削除（必要に応じて）
+      rm -rf ${{ secrets.SSH_DEPLOY_PATH }}/*
+
+- name: SFTP Deploy Files
+  uses: appleboy/scp-action@v0.1.7
+  with:
+    host: ${{ secrets.SSH_HOST }}
+    username: ${{ secrets.SSH_USERNAME }}
+    password: ${{ secrets.SSH_PASSWORD }}
+    port: ${{ secrets.SSH_PORT }}
+    source: "deploy/**"
+    target: "${{ secrets.SSH_DEPLOY_PATH }}"
+```
+
+このワークフローは`deploy.yml`ファイルに既に設定されています。
+
 ## 3. ロリポップサーバーでの初期設定
 
 初回デプロイ後、以下の設定を行ってください：

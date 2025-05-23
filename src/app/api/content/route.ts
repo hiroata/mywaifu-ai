@@ -2,37 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { saveFile } from "@/lib/utils/index";
+import { saveFile, createApiError, createApiSuccess } from "@/lib/utils/index";
 import { validateMediaFile } from "@/lib/utils/validation";
+import { contentSchema } from "@/lib/schemas";
 
-// コンテンツのバリデーションスキーマ
-const contentSchema = z.object({
-  title: z
-    .string()
-    .min(1, "タイトルは必須です")
-    .max(100, "タイトルは100文字以内で入力してください"),
-  description: z
-    .string()
-    .min(1, "説明は必須です")
-    .max(500, "説明は500文字以内で入力してください"),
-  contentType: z.enum(["story", "image", "video"], {
-    invalid_type_error: "コンテンツタイプが無効です",
-  }),
-  characterId: z.string().optional(),
-  customCharacterId: z.string().optional(),
-  isPublic: z.boolean().default(true),
-  storyContent: z.string().optional(),
-});
+// コンテンツのバリデーションスキーマはsrc/lib/schemasに移動
 
 export async function POST(request: NextRequest) {
   try {
     // ユーザー認証の確認
     const session = await auth();
     if (!session || !session.user) {
-      return NextResponse.json(
-        { success: false, error: "認証が必要です" },
-        { status: 401 },
-      );
+      return createApiError("認証が必要です", 401);
     }
 
     // FormDataを取得
@@ -58,13 +39,7 @@ export async function POST(request: NextRequest) {
     const customCharacterId = customCharacterIdRaw || undefined;
 
     if (!characterId && !customCharacterId) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "キャラクターIDが必要です",
-        },
-        { status: 400 },
-      );
+      return createApiError("キャラクターIDが必要です", 400);
     }
 
     // isPublicをbooleanに変換
@@ -87,18 +62,12 @@ export async function POST(request: NextRequest) {
     if (contentType === "image" || contentType === "video") {
       const contentFile = formData.get("contentFile") as File;
       if (!contentFile || contentFile.size === 0) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: `${contentType === "image" ? "画像" : "動画"}ファイルが必要です`,
-          },
-          { status: 400 },
-        );
+        return createApiError(`${contentType === "image" ? "画像" : "動画"}ファイルが必要です`, 400);
       }
       // 共通バリデーション
       const errorMsg = validateMediaFile(contentFile, contentType);
       if (errorMsg) {
-        return NextResponse.json({ success: false, error: errorMsg }, { status: 400 });
+        return createApiError(errorMsg, 400);
       }
       // ファイル保存
       const fileExt = contentFile.name.split(".").pop();

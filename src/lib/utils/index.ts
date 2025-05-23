@@ -4,6 +4,8 @@ import { twMerge } from "tailwind-merge";
 import * as fs from "fs";
 import * as path from "path";
 import { NextResponse } from "next/server";
+import { format, formatDistanceToNow } from "date-fns";
+import { ja } from "date-fns/locale";
 
 // Tailwindクラスを結合するユーティリティ関数
 export function cn(...inputs: ClassValue[]) {
@@ -248,4 +250,84 @@ export function createApiError(error: string, status: number = 400) {
 
 export function createApiSuccess<T>(data: T, message?: string) {
   return NextResponse.json(createApiResponse(true, data, undefined, message));
+}
+
+// --- date-fnsを利用した日付関数（date.tsから統合・改良） ---
+
+// 日本語の日付フォーマット
+export function formatDateJP(date: Date | string | number): string {
+  return format(new Date(date), 'yyyy年MM月dd日', { locale: ja });
+}
+
+// 日本語の日時フォーマット
+export function formatDateTimeJP(date: Date | string | number): string {
+  return format(new Date(date), 'yyyy年MM月dd日 HH:mm', { locale: ja });
+}
+
+// 相対的な時間表示（〜分前、〜時間前など）
+export function getRelativeTimeJP(date: Date | string | number): string {
+  return formatDistanceToNow(new Date(date), { locale: ja, addSuffix: true });
+}
+
+// 汎用フォーマット関数
+export function formatDateCustom(date: Date | string | number, formatString: string): string {
+  return format(new Date(date), formatString, { locale: ja });
+}
+
+// --- 文字列フォーマット関数（formatting.tsから統合） ---
+
+// 文字列の最初の文字を大文字にし、残りを小文字にする
+export function capitalize(str: string): string {
+  if (!str || typeof str !== "string") return "";
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+// 金額をフォーマット（日本円表記）
+export function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat("ja-JP", {
+    style: "currency",
+    currency: "JPY",
+    minimumFractionDigits: 0,
+  }).format(amount);
+}
+
+// テキストを指定した長さに切り詰め、末尾に省略記号を付ける
+export function truncateText(text: string, maxLength: number): string {
+  if (!text || text.length <= maxLength) return text;
+  return text.slice(0, maxLength) + "…";
+}
+
+// HTMLタグを除去してプレーンテキストを取得
+export function stripHtml(html: string): string {
+  if (!html) return "";
+  return html.replace(/<[^>]*>/g, "");
+}
+
+// 文字列をスラッグに変換（URL用）
+export function slugify(text: string): string {
+  if (!text) return "";
+
+  return text
+    .toLowerCase()
+    .normalize("NFD") // 発音記号等を分解
+    .replace(/[\u0300-\u036f]/g, "") // アクセント記号などの削除
+    .replace(/[^a-z0-9ぁ-んァ-ン一-龯ー]/g, "-") // 英数字、日本語以外をハイフンに置換
+    .replace(/-+/g, "-") // 連続するハイフンを一つに
+    .replace(/^-|-$/g, ""); // 先頭と末尾のハイフンを削除
+}
+
+// ファイルサイズを読みやすい形式に変換
+export function formatFileSize(bytes: number): string {
+  if (bytes === 0) return "0 B";
+
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+}
+
+// --- utils.tsから統合された関数 ---
+export function absoluteUrl(path: string) {
+  return `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}${path}`;
 }
