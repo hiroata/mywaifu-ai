@@ -10,8 +10,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // 本番環境向けに静的エクスポートを設定
-  output: 'standalone',
+  // 静的エクスポートに変更
+  output: 'export',
+  trailingSlash: true,
 };
 
 module.exports = nextConfig;
