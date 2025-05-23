@@ -2,8 +2,7 @@
 import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import { v4 as uuidv4 } from "uuid";
 import { config } from "./config";
-import { saveFile } from "./utils/file-utils";
-import { createApiError } from "./utils/index";
+import { saveFile, createApiError } from "./utils/index";
 import * as fs from "fs";
 import * as path from "path";
 

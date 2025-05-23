@@ -1,6 +1,6 @@
 // src/lib/elevenlabs.ts
 import { config } from "./config";
-import { saveFile } from "./utils/file-utils";
+import { saveFile } from "./utils/index";
 
 const { apiKey, baseUrl } = config.api.elevenlabs;
 

@@ -1,6 +1,6 @@
 // src/lib/stable-diffusion.ts
 // Stability.ai (Stable Diffusion) API連携
-import { base64ToBuffer, saveFile } from "./utils/file-utils";
+import { base64ToBuffer, saveFile } from "./utils/index";
 
 const STABILITY_API_KEY = process.env.STABILITY_API_KEY;
 const STABILITY_API_URL =

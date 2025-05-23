@@ -1,11 +1,17 @@
 // src/lib/utils/index.ts
 import { ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import * as fs from "fs";
-import * as path from "path";
 import { NextResponse } from "next/server";
 import { format, formatDistanceToNow } from "date-fns";
 import { ja } from "date-fns/locale";
+
+// fsとpathモジュールはサーバーサイドでのみ使用
+let fs: any;
+let path: any;
+if (typeof window === 'undefined') {
+  fs = require('fs');
+  path = require('path');
+}
 
 // Tailwindクラスを結合するユーティリティ関数
 export function cn(...inputs: ClassValue[]) {
@@ -158,6 +164,12 @@ export async function saveFile(
   extension?: string,
   baseDir?: string,
 ): Promise<string> {
+  // サーバーサイドでのみ実行可能
+  if (typeof window !== 'undefined') {
+    console.error('saveFile関数はサーバーサイドでのみ実行できます');
+    throw new Error('saveFile関数はサーバーサイドでのみ実行できます');
+  }
+
   let folder: string;
   let ext = "bin";
   let base = "./public/uploads";
@@ -262,6 +274,16 @@ export function formatDateJP(date: Date | string | number): string {
 // 日本語の日時フォーマット
 export function formatDateTimeJP(date: Date | string | number): string {
   return format(new Date(date), 'yyyy年MM月dd日 HH:mm', { locale: ja });
+}
+
+// formatDate関数（utils.tsから移植）
+export function formatDate(input: string | number | Date): string {
+  const date = new Date(input);
+  return date.toLocaleDateString("ja-JP", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 // 相対的な時間表示（〜分前、〜時間前など）

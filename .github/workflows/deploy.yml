@@ -1,12 +1,24 @@
-name: Deploy to Shakedude.com
+# これは唯一の公式デプロイワークフローファイルです
+# 複数のデプロイを防ぐために、他のデプロイワークフローファイルはすべて削除されています
+# このワークフローは、メインブランチへのプッシュ時に自動的に実行されます
+
+name: Deploy to Shakedude.com via SSH
 
 on:
   push:
     branches: [main] # mainブランチにプッシュされたときに実行
+    paths-ignore:
+      - ".github/workflows/**" # ワークフロー自体の変更ではデプロイしない
+      - "README.md"
+      - "DEPLOY.md"
+      - "docs/**"
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true # 新しいコミットが来たら実行中のワークフローをキャンセル
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -53,18 +65,7 @@ jobs:
           cp next.config.js deploy/
           cp .env deploy/.env
 
-      - name: Deploy to Shakedude.com via SSH
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            # 古いファイルを削除（必要に応じて）
-            rm -rf ${{ secrets.SSH_DEPLOY_PATH }}/*
-
-      - name: SFTP Deploy Files
+      - name: Deploy files to Shakedude.com (SSH+SFTP)
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -73,3 +74,4 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           source: "deploy/**"
           target: "${{ secrets.SSH_DEPLOY_PATH }}"
+          rm: true # 既存ファイルを削除してから転送
