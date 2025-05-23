@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CharacterCard } from "@/components/character/CharacterCard";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +21,7 @@ import {
   Edit,
   Trash,
   Copy,
+  Users
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -150,78 +152,32 @@ export function CharacterGrid({ characters }: CharacterGridProps) {
             </div>
           </div>
         )}
-        
-        {/* グリッドビュー */}
+          {/* グリッドビュー */}
         {viewMode === "grid" && filteredCharacters.length > 0 && (
           <motion.div
             variants={containerVariants}
             initial="hidden"
             animate="show"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
-          >
+            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"          >
             {filteredCharacters.map((character) => (
               <motion.div key={character.id} variants={itemVariants}>
-                <Card className="overflow-hidden h-full hover:shadow-md transition-shadow border-neutral-200 dark:border-neutral-800">
-                  <Link href={`/chat/${character.id}`} className="block h-full">
-                    <div className="relative aspect-[3/2] w-full">
-                      <Image
-                        src={character.avatarUrl}
-                        alt={character.name}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="p-4">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-medium text-lg text-neutral-900 dark:text-neutral-100">
-                            {character.name}
-                          </h3>
-                          <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                            {character.tagline}
-                          </p>
-                        </div>
-                        <div className="relative -mt-1 -mr-1">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8"
-                                onClick={(e) => e.preventDefault()}
-                              >
-                                <MoreHorizontal size={16} />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <Link href={`/characters/edit/${character.id}`} onClick={(e) => e.stopPropagation()}>
-                                <DropdownMenuItem>
-                                  <Edit className="mr-2 h-4 w-4" />
-                                  編集
-                                </DropdownMenuItem>
-                              </Link>
-                              <DropdownMenuItem onClick={(e) => e.preventDefault()}>
-                                <Copy className="mr-2 h-4 w-4" />
-                                複製
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={(e) => e.preventDefault()} className="text-red-600 dark:text-red-400">
-                                <Trash className="mr-2 h-4 w-4" />
-                                削除
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </div>
-                      <div className="mt-3 text-xs text-neutral-500 dark:text-neutral-500">
-                        メッセージ: {character.messageCount} · 最終更新: {character.updatedAt.toLocaleDateString()}
-                      </div>
-                    </div>
-                  </Link>
-                </Card>
+                <CharacterCard
+                  id={character.id}
+                  name={character.name}
+                  tagline={character.tagline}
+                  avatarUrl={character.avatarUrl}
+                  isNew={new Date().getTime() - character.createdAt.getTime() < 7 * 24 * 60 * 60 * 1000} // 1週間以内なら新着
+                  isOnline={Math.random() > 0.7} // ランダムなオンライン状態（実際にはAPIから取得）
+                  isFavorite={false}
+                  onFavoriteToggle={() => {
+                    // お気に入り登録のロジック
+                    console.log(`Toggle favorite for ${character.name}`);
+                  }}
+                />
               </motion.div>
             ))}
           </motion.div>
-        )}
+        )}}
         
         {/* リストビュー */}
         {viewMode === "list" && filteredCharacters.length > 0 && (

@@ -13,17 +13,22 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 212 100% 44.5%;
+    /* カスタムカラーパレット - MyWaifuAI */
+    --primary: 328 100% 54%; /* プライマリピンク: #ff1493 */
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 210 40% 96.1%;
+    --secondary: 260 84% 63%; /* プライマリパープル: #8b5cf6 */
     --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --accent: 330 100% 71%; /* アクセントピンク: #ff69b4 */
+    --accent-foreground: 222.2 47.4% 11.2%;
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --bg-dark: 0 0% 6%; /* メイン背景: #0f0f0f */
+    --bg-card: 0 0% 10%; /* カード背景: #1a1a1a */
+    --bg-sidebar: 0 0% 7%; /* サイドバー背景: #111111 */
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
@@ -34,31 +39,30 @@
 
     --radius: 0.5rem;
   }
+   .dark {
+    --background: 0 0% 6%; /* bg-dark */
+    --foreground: 0 0% 100%; /* white */
  
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --card: 0 0% 10%; /* bg-card */
+    --card-foreground: 0 0% 100%; /* white */
  
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --popover: 0 0% 7%; /* bg-sidebar */
+    --popover-foreground: 0 0% 100%; /* white */
  
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --primary: 328 100% 54%; /* プライマリピンク: #ff1493 */
+    --primary-foreground: 0 0% 100%; /* white */
  
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
- 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 260 84% 63%; /* プライマリパープル: #8b5cf6 */
+    --secondary-foreground: 0 0% 100%; /* white */
  
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
  
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 330 100% 71%; /* アクセントピンク: #ff69b4 */
+    --accent-foreground: 0 0% 100%; /* white */
  
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%; /* white */
  
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;

@@ -27,6 +27,11 @@ xai-responses/
 .DS_Store
 Thumbs.db
 
+# Backup files
+*.bak
+*.bak[0-9]*
+*.fixed
+
 # Logs
 logs
 *.log

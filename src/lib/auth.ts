@@ -79,14 +79,25 @@ export const {
 
       return token;
     }
-  },
-  session: {
+  },  session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30日間
+  },
+  cookies: {
+    sessionToken: {
+      name: `__Secure-next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
   },
   pages: {
     signIn: "/login",
     signOut: "/",
     error: "/login",
-    newUser: "/register",
+    newUser: "/dashboard", // 新規ユーザーは直接ダッシュボードにリダイレクト
   },
 });

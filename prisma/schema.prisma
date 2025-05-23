@@ -28,6 +28,9 @@ model User {
   subscriptions     Subscription[]
   customCharacters  CustomCharacter[]
   galleryImages     GalleryImage[]
+  characterContents CharacterContent[]
+  contentLikes      ContentLike[]
+  contentComments   ContentComment[]
 }
 
 // Account (OAuth連携アカウント)
@@ -71,6 +74,7 @@ model Character {
   characterImages   CharacterImage[]
   characterVoices   CharacterVoice[]
   tags              Tag[]
+  contents          CharacterContent[]
 }
 
 // CustomCharacter (ユーザー作成キャラクター)
@@ -95,6 +99,7 @@ model CustomCharacter {
   characterImages   CustomCharacterImage[]
   characterVoices   CustomCharacterVoice[]
   tags              Tag[]
+  contents          CharacterContent[]
 }
 
 // Conversation (チャット会話)
@@ -226,4 +231,69 @@ model CustomCharacterVoice {
   
   // 関連テーブル
   customCharacter   CustomCharacter @relation(fields: [customCharacterId], references: [id], onDelete: Cascade)
+}
+
+// CharacterContent (キャラクターコンテンツ)
+model CharacterContent {
+  id                String    @id @default(cuid())
+  title             String
+  description       String
+  contentType       String    // "story", "image", "video"
+  contentUrl        String?   // 画像や動画のURL
+  storyContent      String?   // 小説/ストーリーのテキスト
+  characterId       String?
+  customCharacterId String?
+  userId            String
+  isPublic          Boolean   @default(true)
+  likes             Int       @default(0)
+  views             Int       @default(0)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // 関連テーブル
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  character         Character? @relation(fields: [characterId], references: [id], onDelete: SetNull)
+  customCharacter   CustomCharacter? @relation(fields: [customCharacterId], references: [id], onDelete: SetNull)
+  comments          ContentComment[]
+  contentTags       ContentTag[]
+  contentLikes      ContentLike[]
+}
+
+// ContentComment (コンテンツへのコメント)
+model ContentComment {
+  id                String    @id @default(cuid())
+  contentId         String
+  userId            String
+  comment           String
+  createdAt         DateTime  @default(now())
+  
+  // 関連テーブル
+  content           CharacterContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ContentTag (コンテンツのタグ)
+model ContentTag {
+  id                String    @id @default(cuid())
+  name              String
+  contentId         String
+  
+  // 関連テーブル
+  content           CharacterContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  
+  @@unique([name, contentId])
+}
+
+// ContentLike (コンテンツのいいね)
+model ContentLike {
+  userId            String
+  contentId         String
+  createdAt         DateTime  @default(now())
+  
+  // 関連テーブル
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content           CharacterContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  
+  // 複合主キー
+  @@id([userId, contentId])
 }

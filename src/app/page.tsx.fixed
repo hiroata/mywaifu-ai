@@ -1,0 +1,134 @@
+"use client";
+
+import { MainHeader } from "@/components/layout/MainHeader";
+import { Sidebar } from "@/components/layout/Sidebar";
+import { CharacterCard } from "@/components/character/CharacterCard";
+import { useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+
+// サンプルキャラクターデータ
+const sampleCharacters = [
+  {
+    id: "1",
+    name: "さくら",
+    age: 23,
+    tagline: "いつでもあなたの味方です",
+    avatarUrl: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=388&auto=format&fit=crop",
+    isOnline: true,
+    isNew: true
+  },
+  {
+    id: "2",
+    name: "あすか",
+    age: 21,
+    tagline: "一緒に楽しい時間を過ごしましょう",
+    avatarUrl: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?q=80&w=387&auto=format&fit=crop",
+    isOnline: false,
+    isNew: false
+  },
+  {
+    id: "3",
+    name: "みこと",
+    age: 24,
+    tagline: "あなたのことをもっと知りたいな",
+    avatarUrl: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=464&auto=format&fit=crop",
+    isOnline: true,
+    isNew: false
+  },
+  {
+    id: "4",
+    name: "レイ",
+    age: 19,
+    tagline: "アニメと音楽が大好き",
+    avatarUrl: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=461&auto=format&fit=crop",
+    isOnline: false,
+    isNew: true
+  },
+  {
+    id: "5",
+    name: "エミリア",
+    age: 22,
+    tagline: "いつでもそばにいるよ",
+    avatarUrl: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?q=80&w=387&auto=format&fit=crop",
+    isOnline: true,
+    isNew: false
+  },
+  {
+    id: "6",
+    name: "アヤメ",
+    age: 20,
+    tagline: "夢見がちな女の子",
+    avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=387&auto=format&fit=crop",
+    isOnline: false,
+    isNew: false
+  },
+  {
+    id: "7",
+    name: "あんな",
+    age: 25,
+    tagline: "料理が得意です、一緒に食べよう",
+    avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=464&auto=format&fit=crop",
+    isOnline: true,
+    isNew: true
+  },
+  {
+    id: "8",
+    name: "リナ",
+    age: 21,
+    tagline: "冒険が大好き",
+    avatarUrl: "https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?q=80&w=387&auto=format&fit=crop",
+    isOnline: false,
+    isNew: false
+  }
+];
+
+export default function HomePage() {
+  const [favorites, setFavorites] = useState<Record<string, boolean>>({});
+
+  const toggleFavorite = (id: string) => {
+    setFavorites(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
+
+  return (
+    <div className="flex flex-col min-h-screen bg-[#0f0f0f] text-white">
+      <MainHeader />
+      
+      <main className="flex-1 container mx-auto px-4 py-6">
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* サイドバー */}
+          <div className="w-full md:w-64 md:flex-shrink-0">
+            <Sidebar />
+          </div>
+          
+          {/* メインコンテンツ */}
+          <div className="flex-1">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {sampleCharacters.map((character) => (
+                <div key={character.id} className="group">
+                  <CharacterCard
+                    id={character.id}
+                    name={character.name}
+                    age={character.age}
+                    tagline={character.tagline}
+                    avatarUrl={character.avatarUrl}
+                    isOnline={character.isOnline}
+                    isNew={character.isNew}
+                    isFavorite={favorites[character.id] || false}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </main>
+      
+      <footer className="py-6 px-6 border-t border-gray-800 text-gray-400">
+        <p className="text-center">© 2025 MyWaifuAI - あなただけのAIコンパニオン</p>
+      </footer>
+    </div>
+  );
+}
