@@ -5,7 +5,7 @@ const next = require('next');
 
 const dev = process.env.NODE_ENV !== 'production';
 const hostname = 'localhost';
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001; // ポートを3001に変更
 
 // `next` のインスタンスを準備
 const app = next({ dev, hostname, port });

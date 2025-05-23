@@ -62,7 +62,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ secrets.SSH_PORT }}
-          source: ".next/,public/,package.json,package-lock.json,next.config.js,.env,server.js,ecosystem.config.js,.htaccess"
+          source: ".next/,public/,package.json,package-lock.json,next.config.js,.env,server.js,ecosystem.config.js,.htaccess,start-server.sh"
           target: "${{ secrets.SSH_DEPLOY_PATH }}"
           rm: true # 既存ファイルを削除してから転送
           
@@ -76,11 +76,22 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             cd ${{ secrets.SSH_DEPLOY_PATH }}
-            # PM2がインストールされていなければインストール
-            if ! command -v pm2 &> /dev/null; then
-              npm install -g pm2
-            fi
-            # 依存関係をインストール
-            npm ci --production
-            # アプリケーションを再起動
-            pm2 reload ecosystem.config.js || pm2 start ecosystem.config.js
+            
+            # シェルスクリプトに実行権限を付与
+            chmod +x start-server.sh
+            
+            # 環境情報を出力
+            echo "Current directory: $(pwd)"
+            echo "Files in directory:"
+            ls -la
+            
+            # ノード環境の確認
+            echo "Node.js/npm paths:"
+            which node || echo "node not found in PATH"
+            which npm || echo "npm not found in PATH"
+            
+            # 起動スクリプトを実行
+            echo "Running start script..."
+            ./start-server.sh || bash start-server.sh
+            
+            echo "Server start attempt completed"
