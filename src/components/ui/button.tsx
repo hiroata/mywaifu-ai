@@ -11,11 +11,14 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-accent text-white hover:brightness-105",
-        outline: "border border-input bg-background hover:bg-accent/10 hover:text-accent",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        outline:
+          "border border-input bg-background hover:bg-accent/10 hover:text-accent",
+        secondary:
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent/10 hover:text-accent",
         link: "text-primary underline-offset-4 hover:underline",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        destructive:
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
       },
       size: {
         default: "h-10 px-6 py-2",
@@ -28,7 +31,7 @@ const buttonVariants = cva(
       variant: "default",
       size: "default",
     },
-  }
+  },
 );
 
 // ボタンの属性の型定義
@@ -49,7 +52,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       />
     );
-  }
+  },
 );
 Button.displayName = "Button";
 

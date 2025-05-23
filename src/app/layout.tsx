@@ -5,7 +5,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "MyWaifuAI - あなただけのAIコンパニオン",
-  description: "MyWaifuAIは、AIを活用したパーソナルコンパニオンサービスです。あなただけのAIキャラクターとチャットを楽しみましょう。",
+  description:
+    "MyWaifuAIは、AIを活用したパーソナルコンパニオンサービスです。あなただけのAIキャラクターとチャットを楽しみましょう。",
 };
 
 export default function RootLayout({
@@ -17,7 +18,11 @@ export default function RootLayout({
     <html lang="ja" suppressHydrationWarning className="dark">
       <body className="min-h-screen bg-[#0f0f0f] text-white">
         <AuthProvider>
-          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem={false}
+          >
             {children}
           </ThemeProvider>
         </AuthProvider>

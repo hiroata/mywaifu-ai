@@ -5,9 +5,23 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Heart, MessageCircle, Share2, FileText, ImageIcon, Video, Plus } from "lucide-react";
+import {
+  Heart,
+  MessageCircle,
+  Share2,
+  FileText,
+  ImageIcon,
+  Video,
+  Plus,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -17,8 +31,8 @@ type Character = {
   description: string;
   shortDescription?: string;
   age?: number;
-  gender: 'male' | 'female' | 'other';
-  type: 'real' | 'anime';
+  gender: "male" | "female" | "other";
+  type: "real" | "anime";
   personality: string;
   profileImageUrl: string;
   tags: { id: string; name: string }[];
@@ -30,7 +44,7 @@ type CharacterContent = {
   id: string;
   title: string;
   description: string;
-  contentType: 'story' | 'image' | 'video';
+  contentType: "story" | "image" | "video";
   contentUrl?: string;
   storyContent?: string;
   likes: number;
@@ -46,7 +60,7 @@ type CharacterContent = {
 // コンテンツカードコンポーネント
 const ContentCard = ({ content }: { content: CharacterContent }) => {
   const [liked, setLiked] = useState(false);
-  
+
   const handleLike = async () => {
     try {
       const response = await fetch(`/api/content/${content.id}/like`, {
@@ -59,7 +73,7 @@ const ContentCard = ({ content }: { content: CharacterContent }) => {
       console.error("いいね処理に失敗しました", error);
     }
   };
-  
+
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
@@ -81,7 +95,7 @@ const ContentCard = ({ content }: { content: CharacterContent }) => {
           <span>{new Date(content.createdAt).toLocaleDateString("ja-JP")}</span>
         </div>
       </CardHeader>
-      
+
       <CardContent className="flex-grow">
         {content.contentType === "story" ? (
           <div className="text-sm line-clamp-4">{content.storyContent}</div>
@@ -101,7 +115,7 @@ const ContentCard = ({ content }: { content: CharacterContent }) => {
           </div>
         )}
       </CardContent>
-      
+
       <CardFooter className="border-t pt-3">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-4">
@@ -128,14 +142,20 @@ const ContentCard = ({ content }: { content: CharacterContent }) => {
   );
 };
 
-export default function CharacterDetailPage({ params }: { params: { id: string } }) {
+export default function CharacterDetailPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const router = useRouter();
   const [character, setCharacter] = useState<Character | null>(null);
   const [contents, setContents] = useState<CharacterContent[]>([]);
-  const [contentType, setContentType] = useState<"all" | "story" | "image" | "video">("all");
+  const [contentType, setContentType] = useState<
+    "all" | "story" | "image" | "video"
+  >("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  
+
   // キャラクターとコンテンツの取得
   useEffect(() => {
     const fetchData = async () => {
@@ -144,38 +164,47 @@ export default function CharacterDetailPage({ params }: { params: { id: string }
         // キャラクター情報を取得
         const characterResponse = await fetch(`/api/characters/${params.id}`);
         const characterData = await characterResponse.json();
-        
+
         if (!characterData.success) {
-          throw new Error(characterData.error || "キャラクターの取得に失敗しました");
+          throw new Error(
+            characterData.error || "キャラクターの取得に失敗しました",
+          );
         }
-        
+
         setCharacter(characterData.data);
-        
+
         // キャラクターのコンテンツを取得
-        const contentsResponse = await fetch(`/api/content?characterId=${params.id}`);
+        const contentsResponse = await fetch(
+          `/api/content?characterId=${params.id}`,
+        );
         const contentsData = await contentsResponse.json();
-        
+
         if (!contentsData.success) {
-          throw new Error(contentsData.error || "コンテンツの取得に失敗しました");
+          throw new Error(
+            contentsData.error || "コンテンツの取得に失敗しました",
+          );
         }
-        
+
         setContents(contentsData.data.items);
       } catch (err) {
         console.error(err);
-        setError(err instanceof Error ? err.message : "データの取得に失敗しました");
+        setError(
+          err instanceof Error ? err.message : "データの取得に失敗しました",
+        );
       } finally {
         setLoading(false);
       }
     };
-    
+
     fetchData();
   }, [params.id]);
-  
+
   // フィルター適用済みのコンテンツ
-  const filteredContents = contentType === "all"
-    ? contents
-    : contents.filter(content => content.contentType === contentType);
-  
+  const filteredContents =
+    contentType === "all"
+      ? contents
+      : contents.filter((content) => content.contentType === contentType);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
@@ -183,7 +212,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string }
       </div>
     );
   }
-  
+
   if (error) {
     return (
       <div className="container mx-auto py-8">
@@ -193,12 +222,14 @@ export default function CharacterDetailPage({ params }: { params: { id: string }
       </div>
     );
   }
-  
+
   if (!character) {
     return (
       <div className="container mx-auto py-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">キャラクターが見つかりませんでした</h1>
+          <h1 className="text-2xl font-bold mb-4">
+            キャラクターが見つかりませんでした
+          </h1>
           <Button onClick={() => router.push("/characters")}>
             キャラクター一覧に戻る
           </Button>
@@ -206,7 +237,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string }
       </div>
     );
   }
-  
+
   return (
     <div className="container mx-auto py-8">
       {/* キャラクタープロフィールセクション */}
@@ -227,31 +258,37 @@ export default function CharacterDetailPage({ params }: { params: { id: string }
               <div>
                 <h1 className="text-3xl font-bold">{character.name}</h1>
                 <div className="flex items-center text-gray-600 mt-1">
-                  {character.age && <span className="mr-3">{character.age}歳</span>}
+                  {character.age && (
+                    <span className="mr-3">{character.age}歳</span>
+                  )}
                   <span className="mr-3">
-                    {character.gender === "female" ? "女性" : character.gender === "male" ? "男性" : "その他"}
+                    {character.gender === "female"
+                      ? "女性"
+                      : character.gender === "male"
+                        ? "男性"
+                        : "その他"}
                   </span>
                   <span>{character.type === "real" ? "実写" : "アニメ"}</span>
                 </div>
               </div>
               <Link href={`/chat/${params.id}`}>
-                <Button>
-                  このキャラクターとチャットする
-                </Button>
+                <Button>このキャラクターとチャットする</Button>
               </Link>
             </div>
-            
+
             <div className="flex flex-wrap gap-2 mb-4">
               {character.tags.map((tag) => (
                 <Badge key={tag.id}>{tag.name}</Badge>
               ))}
             </div>
-            
+
             <div className="mb-4">
               <h3 className="font-semibold text-lg mb-1">自己紹介</h3>
-              <p className="text-gray-700">{character.shortDescription || character.description}</p>
+              <p className="text-gray-700">
+                {character.shortDescription || character.description}
+              </p>
             </div>
-            
+
             <div>
               <h3 className="font-semibold text-lg mb-1">性格</h3>
               <p className="text-gray-700">{character.personality}</p>
@@ -259,7 +296,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string }
           </div>
         </div>
       </div>
-      
+
       {/* コンテンツセクション */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
@@ -271,8 +308,13 @@ export default function CharacterDetailPage({ params }: { params: { id: string }
             </Button>
           </Link>
         </div>
-        
-        <Tabs value={contentType} onValueChange={(value) => setContentType(value as "all" | "story" | "image" | "video")}>
+
+        <Tabs
+          value={contentType}
+          onValueChange={(value) =>
+            setContentType(value as "all" | "story" | "image" | "video")
+          }
+        >
           <TabsList className="mb-6">
             <TabsTrigger value="all">すべて</TabsTrigger>
             <TabsTrigger value="story" className="flex items-center gap-1">
@@ -288,7 +330,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string }
               <span>動画</span>
             </TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="all" className="mt-0">
             {filteredContents.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -298,7 +340,9 @@ export default function CharacterDetailPage({ params }: { params: { id: string }
               </div>
             ) : (
               <div className="text-center py-16 bg-gray-50 rounded-lg">
-                <h3 className="text-xl font-medium mb-2">コンテンツがありません</h3>
+                <h3 className="text-xl font-medium mb-2">
+                  コンテンツがありません
+                </h3>
                 <p className="text-gray-500 mb-4">
                   このキャラクターに関するコンテンツをアップロードしましょう
                 </p>
@@ -308,7 +352,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string }
               </div>
             )}
           </TabsContent>
-          
+
           <TabsContent value="story" className="mt-0">
             {filteredContents.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -318,7 +362,9 @@ export default function CharacterDetailPage({ params }: { params: { id: string }
               </div>
             ) : (
               <div className="text-center py-16 bg-gray-50 rounded-lg">
-                <h3 className="text-xl font-medium mb-2">小説コンテンツがありません</h3>
+                <h3 className="text-xl font-medium mb-2">
+                  小説コンテンツがありません
+                </h3>
                 <p className="text-gray-500 mb-4">
                   このキャラクターに関する小説を書いてみましょう
                 </p>
@@ -328,7 +374,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string }
               </div>
             )}
           </TabsContent>
-          
+
           <TabsContent value="image" className="mt-0">
             {filteredContents.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -338,7 +384,9 @@ export default function CharacterDetailPage({ params }: { params: { id: string }
               </div>
             ) : (
               <div className="text-center py-16 bg-gray-50 rounded-lg">
-                <h3 className="text-xl font-medium mb-2">画像コンテンツがありません</h3>
+                <h3 className="text-xl font-medium mb-2">
+                  画像コンテンツがありません
+                </h3>
                 <p className="text-gray-500 mb-4">
                   このキャラクターに関する画像をアップロードしましょう
                 </p>
@@ -348,7 +396,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string }
               </div>
             )}
           </TabsContent>
-          
+
           <TabsContent value="video" className="mt-0">
             {filteredContents.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -358,7 +406,9 @@ export default function CharacterDetailPage({ params }: { params: { id: string }
               </div>
             ) : (
               <div className="text-center py-16 bg-gray-50 rounded-lg">
-                <h3 className="text-xl font-medium mb-2">動画コンテンツがありません</h3>
+                <h3 className="text-xl font-medium mb-2">
+                  動画コンテンツがありません
+                </h3>
                 <p className="text-gray-500 mb-4">
                   このキャラクターに関する動画をアップロードしましょう
                 </p>

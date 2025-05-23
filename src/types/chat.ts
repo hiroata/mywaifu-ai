@@ -5,7 +5,7 @@ export interface Message {
   id: string;
   conversationId: string;
   content: string;
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   hasImage: boolean;
   imageUrl?: string | null;
   hasVoice: boolean;
@@ -41,7 +41,7 @@ export type MessageInput = {
   content: string;
   imagePrompt?: string;
   generateVoice?: boolean;
-  aiProvider?: 'openai' | 'xai';
+  aiProvider?: "openai" | "xai";
 };
 
 export type ChatState = {

@@ -11,35 +11,63 @@ export const emailSchema = z
 export const passwordSchema = z
   .string()
   .min(8, { message: "パスワードは8文字以上である必要があります" })
-  .regex(/[A-Z]/, { message: "パスワードには少なくとも1つの大文字が含まれる必要があります" })
-  .regex(/[a-z]/, { message: "パスワードには少なくとも1つの小文字が含まれる必要があります" })
-  .regex(/[0-9]/, { message: "パスワードには少なくとも1つの数字が含まれる必要があります" });
+  .regex(/[A-Z]/, {
+    message: "パスワードには少なくとも1つの大文字が含まれる必要があります",
+  })
+  .regex(/[a-z]/, {
+    message: "パスワードには少なくとも1つの小文字が含まれる必要があります",
+  })
+  .regex(/[0-9]/, {
+    message: "パスワードには少なくとも1つの数字が含まれる必要があります",
+  });
 
 // ユーザー名のバリデーションスキーマ
 export const usernameSchema = z
   .string()
   .min(3, { message: "ユーザー名は3文字以上である必要があります" })
   .max(20, { message: "ユーザー名は20文字以下である必要があります" })
-  .regex(/^[a-zA-Z0-9_-]+$/, { 
-    message: "ユーザー名には英数字、アンダースコア(_)、ハイフン(-)のみ使用できます" 
+  .regex(/^[a-zA-Z0-9_-]+$/, {
+    message:
+      "ユーザー名には英数字、アンダースコア(_)、ハイフン(-)のみ使用できます",
   });
 
 // 画像ファイルのバリデーション関数
-export function validateImageFile(file: File | null | undefined): string | null {
+export function validateImageFile(
+  file: File | null | undefined,
+): string | null {
   if (!file) return null;
-  
+
   // ファイル形式の確認
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
   if (!allowedTypes.includes(file.type)) {
     return "JPEG, PNG, GIF, WebP形式の画像ファイルをアップロードしてください";
   }
-  
+
   // ファイルサイズの確認（5MB以下）
   const maxSize = 5 * 1024 * 1024;
   if (file.size > maxSize) {
     return "画像サイズは5MB以下である必要があります";
   }
-  
+
+  return null;
+}
+
+// 動画ファイルのバリデーション関数
+export function validateVideoFile(
+  file: File | null | undefined,
+): string | null {
+  if (!file) return null;
+
+  const allowedTypes = ["video/mp4", "video/webm", "video/ogg"];
+  if (!allowedTypes.includes(file.type)) {
+    return "MP4, WebM, OGG形式の動画ファイルをアップロードしてください";
+  }
+
+  const maxSize = 100 * 1024 * 1024; // 100MB
+  if (file.size > maxSize) {
+    return "動画サイズは100MB以下である必要があります";
+  }
+
   return null;
 }
 
@@ -68,23 +96,34 @@ export function isValidAge(age: number): boolean {
 // オブジェクトのすべてのフィールドがnullまたは空の文字列でないか確認
 export function hasAnyValue(obj: Record<string, any>): boolean {
   return Object.values(obj).some(
-    value => value !== null && value !== undefined && value !== ''
+    (value) => value !== null && value !== undefined && value !== "",
   );
 }
 
 // 汎用バリデーション
 export const fileSchema = z.object({
-  size: z.number().max(5 * 1024 * 1024, { message: "ファイルサイズは5MB以下である必要があります" }),
-  type: z.string().refine(
-    (type) => ['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(type),
-    { message: "JPEG, PNG, GIF, WebP形式のファイルをアップロードしてください" }
-  ),
+  size: z
+    .number()
+    .max(5 * 1024 * 1024, {
+      message: "ファイルサイズは5MB以下である必要があります",
+    }),
+  type: z
+    .string()
+    .refine(
+      (type) =>
+        ["image/jpeg", "image/png", "image/gif", "image/webp"].includes(type),
+      {
+        message: "JPEG, PNG, GIF, WebP形式のファイルをアップロードしてください",
+      },
+    ),
 });
 
 // キャラクターのバリデーションスキーマ
 export const characterSchema = z.object({
   name: z.string().min(1, { message: "名前は必須です" }),
-  description: z.string().min(10, { message: "説明文は10文字以上入力してください" }),
+  description: z
+    .string()
+    .min(10, { message: "説明文は10文字以上入力してください" }),
   shortDescription: z.string().optional(),
   age: z.number().optional(),
   gender: z.string(),
@@ -94,7 +133,10 @@ export const characterSchema = z.object({
 });
 
 // バリデーションユーティリティ
-export function validateData<T>(schema: z.ZodType<T>, data: unknown): { success: boolean; data?: T; error?: string } {
+export function validateData<T>(
+  schema: z.ZodType<T>,
+  data: unknown,
+): { success: boolean; data?: T; error?: string } {
   try {
     const validData = schema.parse(data);
     return { success: true, data: validData };

@@ -9,13 +9,13 @@ export class XAIClient {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${this.apiKey}`
+        Authorization: `Bearer ${this.apiKey}`,
       },
       body: JSON.stringify({
         model,
         messages: [{ role: "user", content: prompt }],
-        max_tokens: 1024
-      })
+        max_tokens: 1024,
+      }),
     });
     if (!res.ok) throw new Error("Grok API error");
     const data = await res.json();

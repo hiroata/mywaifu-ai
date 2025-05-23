@@ -9,7 +9,7 @@ export const useChatStore = create<{
   conversation: Conversation | null;
   character: Character | CustomCharacter | null;
   relationship: Relationship | null;
-  
+
   // アクション
   setMessages: (messages: Message[]) => void;
   addMessage: (message: Message) => void;
@@ -25,39 +25,41 @@ export const useChatStore = create<{
   conversation: null,
   character: null,
   relationship: null,
-  
+
   // メッセージを設定
   setMessages: (messages) => set({ messages }),
-  
+
   // 新しいメッセージを追加
-  addMessage: (message) => 
+  addMessage: (message) =>
     set((state) => ({ messages: [...state.messages, message] })),
-  
+
   // 複数のメッセージを追加
-  addMessages: (newMessages) => 
-    set((state) => ({ 
+  addMessages: (newMessages) =>
+    set((state) => ({
       messages: [...newMessages, ...state.messages].sort(
-        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-      )
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      ),
     })),
-  
+
   // ローディング状態を設定
   setLoading: (isLoading) => set({ isLoading }),
-  
+
   // 会話を設定
   setConversation: (conversation) => set({ conversation }),
-  
+
   // キャラクターを設定
   setCharacter: (character) => set({ character }),
-  
+
   // 関係性を設定
   setRelationship: (relationship) => set({ relationship }),
-  
+
   // チャットをクリア
-  clearChat: () => set({ 
-    messages: [],
-    conversation: null,
-    character: null,
-    relationship: null,
-  }),
+  clearChat: () =>
+    set({
+      messages: [],
+      conversation: null,
+      character: null,
+      relationship: null,
+    }),
 }));

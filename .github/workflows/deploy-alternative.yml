@@ -1,12 +1,11 @@
-name: Build Test
+name: Deploy to Shakedude.com
 
 on:
-  pull_request:
-    branches: [main]
-  workflow_dispatch: # 手動実行も可能に
+  push:
+    branches: [main] # mainブランチにプッシュされたときに実行
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -21,29 +20,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Create test .env file
+      - name: Create .env file from secrets
         run: |
-          echo "NEXTAUTH_SECRET=test_secret" > .env
-          echo "NEXTAUTH_URL=http://localhost:3000" >> .env
-          echo "GOOGLE_CLIENT_ID=test_google_id" >> .env
-          echo "GOOGLE_CLIENT_SECRET=test_google_secret" >> .env
-          echo "DATABASE_URL=file:./test.db" >> .env
-          echo "XAI_API_KEY=test_xai_key" >> .env
-          echo "GEMINI_API_KEY=test_gemini_key" >> .env
-
-      - name: Build project
-        run: npm run build
-        env:
-          NEXTAUTH_SECRET: test_secret
-          NEXTAUTH_URL: http://localhost:3000
-          GOOGLE_CLIENT_ID: test_google_id
-          GOOGLE_CLIENT_SECRET: test_google_secret
-          DATABASE_URL: file:./test.db
-          XAI_API_KEY: test_xai_key
-          GEMINI_API_KEY: test_gemini_key
-
-      - name: Run tests (if any)
-        run: npm test || true # テストがない場合でもエラーにならないように
+          echo "NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}" > .env
+          echo "NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }}" >> .env
+          echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
+          echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
+          echo "XAI_API_KEY=${{ secrets.XAI_API_KEY }}" >> .env
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
 
       - name: Build project
         run: npm run build
@@ -68,14 +53,14 @@ jobs:
           cp next.config.js deploy/
           cp .env deploy/.env
 
-      - name: Deploy to Shakedude.com via FTPS
+      - name: Deploy to Shakedude.com via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
-          server: ftp.3385b51a75b81a95.main.jp
-          username: main.jp-3385b51a75b81a95
+          server: std014.lolipop.jp
+          username: LAA0978814
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          port: 990
+          protocol: ftp
+          port: 21
           local-dir: ./deploy/
-          server-dir: /home/users/3385b51a75b81a95/web/
+          server-dir: /shakedude.com/
           dangerous-clean-slate: true

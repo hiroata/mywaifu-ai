@@ -13,7 +13,10 @@ interface MainHeaderProps {
   onTabChange?: (tab: TabType) => void;
 }
 
-export function MainHeader({ activeTab = "female", onTabChange }: MainHeaderProps) {
+export function MainHeader({
+  activeTab = "female",
+  onTabChange,
+}: MainHeaderProps) {
   const handleTabClick = (tab: TabType) => {
     if (onTabChange) {
       onTabChange(tab);
@@ -34,7 +37,8 @@ export function MainHeader({ activeTab = "female", onTabChange }: MainHeaderProp
             onClick={() => handleTabClick("female")}
             className={cn(
               "text-gray-400 hover:text-white pb-2 transition-colors",
-              activeTab === "female" && "text-pink-500 border-b-2 border-pink-500"
+              activeTab === "female" &&
+                "text-pink-500 border-b-2 border-pink-500",
             )}
           >
             女性
@@ -43,7 +47,8 @@ export function MainHeader({ activeTab = "female", onTabChange }: MainHeaderProp
             onClick={() => handleTabClick("anime")}
             className={cn(
               "text-gray-400 hover:text-white pb-2 transition-colors",
-              activeTab === "anime" && "text-pink-500 border-b-2 border-pink-500"
+              activeTab === "anime" &&
+                "text-pink-500 border-b-2 border-pink-500",
             )}
           >
             アニメ
@@ -52,7 +57,8 @@ export function MainHeader({ activeTab = "female", onTabChange }: MainHeaderProp
             onClick={() => handleTabClick("male")}
             className={cn(
               "text-gray-400 hover:text-white pb-2 transition-colors",
-              activeTab === "male" && "text-pink-500 border-b-2 border-pink-500"
+              activeTab === "male" &&
+                "text-pink-500 border-b-2 border-pink-500",
             )}
           >
             男性

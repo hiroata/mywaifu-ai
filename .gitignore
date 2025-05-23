@@ -18,6 +18,26 @@ dist/
 responses/
 xai-responses/
 
+# Next.js build output
+.next/
+out/
+
+# Vercel
+.vercel
+
+# Production builds
+build/
+dist/
+
+# Runtime data
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
 # IDE specific files
 .idea/
 .vscode/*

@@ -20,16 +20,22 @@ type Character = {
   profileImageUrl: string;
 };
 
-export default function ContentUploadForm({ params }: { params: { id: string } }) {
+export default function ContentUploadForm({
+  params,
+}: {
+  params: { id: string };
+}) {
   const router = useRouter();
-  const [contentType, setContentType] = useState<"story" | "image" | "video">("story");
+  const [contentType, setContentType] = useState<"story" | "image" | "video">(
+    "story",
+  );
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     storyContent: "",
     isPublic: true,
   });
-  
+
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -37,14 +43,14 @@ export default function ContentUploadForm({ params }: { params: { id: string } }
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [character, setCharacter] = useState<Character | null>(null);
-  
+
   // キャラクター情報の取得
   useEffect(() => {
     const fetchCharacter = async () => {
       try {
         const response = await fetch(`/api/characters/${params.id}`);
         const data = await response.json();
-        
+
         if (data.success) {
           setCharacter(data.data);
         }
@@ -52,10 +58,10 @@ export default function ContentUploadForm({ params }: { params: { id: string } }
         console.error("キャラクター情報の取得に失敗しました", err);
       }
     };
-    
+
     fetchCharacter();
   }, [params.id]);
-  
+
   // タグの追加
   const addTag = () => {
     if (newTag && !tags.includes(newTag)) {
@@ -74,7 +80,7 @@ export default function ContentUploadForm({ params }: { params: { id: string } }
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       setFile(selectedFile);
-      
+
       // 画像の場合はプレビュー表示
       if (contentType === "image" && selectedFile.type.startsWith("image/")) {
         const reader = new FileReader();
@@ -96,57 +102,67 @@ export default function ContentUploadForm({ params }: { params: { id: string } }
 
     try {
       const submitData = new FormData();
-      
+
       // 基本情報
       submitData.append("title", formData.title);
       submitData.append("description", formData.description);
       submitData.append("contentType", contentType);
       submitData.append("isPublic", formData.isPublic.toString());
       submitData.append("characterId", params.id);
-      
+
       // コンテンツタイプに応じたデータの追加
       if (contentType === "story") {
         submitData.append("storyContent", formData.storyContent);
       } else if ((contentType === "image" || contentType === "video") && file) {
         submitData.append("contentFile", file);
       }
-      
+
       // タグをJSON文字列に変換して追加
       submitData.append("tags", JSON.stringify(tags));
-      
+
       // APIエンドポイントにPOSTリクエスト
       const response = await fetch("/api/content", {
         method: "POST",
         body: submitData,
       });
-      
+
       const data = await response.json();
-      
+
       if (!data.success) {
         throw new Error(data.error || "コンテンツのアップロードに失敗しました");
       }
-      
+
       // 成功した場合、キャラクター詳細ページに遷移
       router.push(`/characters/${params.id}`);
       router.refresh();
     } catch (err) {
       console.error(err);
-      setError(err instanceof Error ? err.message : "コンテンツのアップロードに失敗しました");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "コンテンツのアップロードに失敗しました",
+      );
     } finally {
       setLoading(false);
     }
   };
 
   // フォーム入力の更新
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
   return (
     <div className="container max-w-3xl mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-2 text-center">コンテンツをアップロード</h1>
-      
+      <h1 className="text-3xl font-bold mb-2 text-center">
+        コンテンツをアップロード
+      </h1>
+
       {character && (
         <div className="flex items-center justify-center gap-2 mb-6">
           <div className="relative w-10 h-10 rounded-full overflow-hidden">
@@ -160,14 +176,19 @@ export default function ContentUploadForm({ params }: { params: { id: string } }
           <span className="font-medium">{character.name}</span>
         </div>
       )}
-      
+
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
           {error}
         </div>
       )}
-      
-      <Tabs value={contentType} onValueChange={(value) => setContentType(value as "story" | "image" | "video")}>
+
+      <Tabs
+        value={contentType}
+        onValueChange={(value) =>
+          setContentType(value as "story" | "image" | "video")
+        }
+      >
         <TabsList className="grid grid-cols-3 mb-8">
           <TabsTrigger value="story" className="flex items-center gap-2">
             <FileText size={16} />
@@ -182,7 +203,7 @@ export default function ContentUploadForm({ params }: { params: { id: string } }
             <span>動画</span>
           </TabsTrigger>
         </TabsList>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* 共通フィールド */}
           <div>
@@ -196,7 +217,7 @@ export default function ContentUploadForm({ params }: { params: { id: string } }
               required
             />
           </div>
-          
+
           <div>
             <Label htmlFor="description">説明 *</Label>
             <Textarea
@@ -209,7 +230,7 @@ export default function ContentUploadForm({ params }: { params: { id: string } }
               required
             />
           </div>
-          
+
           {/* コンテンツタイプ別フィールド */}
           <TabsContent value="story" className="space-y-6">
             <div>
@@ -225,7 +246,7 @@ export default function ContentUploadForm({ params }: { params: { id: string } }
               />
             </div>
           </TabsContent>
-          
+
           <TabsContent value="image" className="space-y-6">
             <div>
               <Label htmlFor="imageFile">画像ファイル *</Label>
@@ -252,7 +273,7 @@ export default function ContentUploadForm({ params }: { params: { id: string } }
               )}
             </div>
           </TabsContent>
-          
+
           <TabsContent value="video" className="space-y-6">
             <div>
               <Label htmlFor="videoFile">動画ファイル *</Label>
@@ -269,7 +290,7 @@ export default function ContentUploadForm({ params }: { params: { id: string } }
               </p>
             </div>
           </TabsContent>
-          
+
           {/* タグ */}
           <div>
             <Label htmlFor="newTag">タグ</Label>
@@ -303,7 +324,7 @@ export default function ContentUploadForm({ params }: { params: { id: string } }
               ))}
             </div>
           </div>
-          
+
           {/* 公開設定 */}
           <div className="flex items-center gap-2">
             <Switch
@@ -315,7 +336,7 @@ export default function ContentUploadForm({ params }: { params: { id: string } }
             />
             <Label htmlFor="isPublic">公開する</Label>
           </div>
-          
+
           {/* 送信ボタン */}
           <div className="pt-4">
             <Button type="submit" className="w-full" disabled={loading}>

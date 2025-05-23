@@ -3,7 +3,7 @@ import { useState } from "react";
 import { APIResponse } from "@/types";
 
 export function useApi<T, P = any>(
-  apiFunction: (params: P) => Promise<Response>
+  apiFunction: (params: P) => Promise<Response>,
 ) {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -12,15 +12,15 @@ export function useApi<T, P = any>(
   const execute = async (params: P): Promise<APIResponse<T>> => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const response = await apiFunction(params);
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error || "APIリクエストに失敗しました");
       }
-      
+
       setData(result.data);
       return result;
     } catch (err: any) {
@@ -28,7 +28,7 @@ export function useApi<T, P = any>(
       setError(errorMessage);
       return {
         success: false,
-        error: errorMessage
+        error: errorMessage,
       };
     } finally {
       setIsLoading(false);

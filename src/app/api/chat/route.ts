@@ -22,23 +22,24 @@ export async function POST(request: NextRequest) {
           conversationId: "mock-conversation-id",
           content: "こんにちは",
           role: "user",
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
         },
         assistantMessage: {
           id: "mock-assistant-message-id",
           conversationId: "mock-conversation-id",
-          content: "これはテスト応答です。ビルドテスト用のモックメッセージです。",
+          content:
+            "これはテスト応答です。ビルドテスト用のモックメッセージです。",
           role: "assistant",
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
         },
-        relationship: null
-      }
+        relationship: null,
+      },
     });
   } catch (error) {
     console.error("ChatAPI エラー:", error);
     return NextResponse.json(
       { error: "メッセージの処理中にエラーが発生しました" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -54,22 +55,22 @@ export async function GET(request: NextRequest) {
           conversationId: "mock-conversation-id",
           content: "こんにちは",
           role: "user",
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
         },
         {
           id: "mock-message-2",
           conversationId: "mock-conversation-id",
           content: "これはテスト応答です。",
           role: "assistant",
-          createdAt: new Date().toISOString()
-        }
-      ]
+          createdAt: new Date().toISOString(),
+        },
+      ],
     });
   } catch (error) {
     console.error("ChatAPI エラー:", error);
     return NextResponse.json(
       { error: "メッセージの取得中にエラーが発生しました" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

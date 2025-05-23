@@ -13,26 +13,26 @@ const userSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     // バリデーション
     const validatedData = userSchema.parse(body);
     const { name, email, password } = validatedData;
-    
+
     // メールアドレスの重複確認
     const existingUser = await db.user.findUnique({
       where: { email },
     });
-    
+
     if (existingUser) {
       return NextResponse.json(
         { error: "このメールアドレスは既に登録されています" },
-        { status: 409 }
+        { status: 409 },
       );
     }
-    
+
     // パスワードのハッシュ化
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     // ユーザーの作成
     const user = await db.user.create({
       data: {
@@ -41,26 +41,26 @@ export async function POST(request: NextRequest) {
         hashedPassword,
       },
     });
-    
+
     // レスポンスからパスワードを除外
     const { hashedPassword: _, ...userWithoutPassword } = user;
-    
+
     return NextResponse.json(
       { success: true, user: userWithoutPassword },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: error.errors[0].message },
-        { status: 400 }
+        { status: 400 },
       );
     }
-    
+
     console.error("ユーザー登録エラー:", error);
     return NextResponse.json(
       { error: "ユーザー登録に失敗しました" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

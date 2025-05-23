@@ -39,43 +39,45 @@
 
     --radius: 0.5rem;
   }
-   .dark {
+  .dark {
     --background: 0 0% 6%; /* bg-dark */
     --foreground: 0 0% 100%; /* white */
- 
+
     --card: 0 0% 10%; /* bg-card */
     --card-foreground: 0 0% 100%; /* white */
- 
+
     --popover: 0 0% 7%; /* bg-sidebar */
     --popover-foreground: 0 0% 100%; /* white */
- 
+
     --primary: 328 100% 54%; /* プライマリピンク: #ff1493 */
     --primary-foreground: 0 0% 100%; /* white */
- 
+
     --secondary: 260 84% 63%; /* プライマリパープル: #8b5cf6 */
     --secondary-foreground: 0 0% 100%; /* white */
- 
+
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
- 
+
     --accent: 330 100% 71%; /* アクセントピンク: #ff69b4 */
     --accent-foreground: 0 0% 100%; /* white */
- 
+
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 100%; /* white */
- 
+
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
   }
 }
- 
+
 @layer base {
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
 }

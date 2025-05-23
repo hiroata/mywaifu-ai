@@ -8,14 +8,23 @@ import { revalidatePath } from "next/cache";
 
 // メッセージ送信スキーマ
 const messageSchema = z.object({
-  content: z.string().min(1, "メッセージを入力してください").max(1000, "メッセージは1000文字以内で入力してください"),
-  imagePrompt: z.string().max(200, "画像プロンプトは200文字以内で入力してください").optional(),
+  content: z
+    .string()
+    .min(1, "メッセージを入力してください")
+    .max(1000, "メッセージは1000文字以内で入力してください"),
+  imagePrompt: z
+    .string()
+    .max(200, "画像プロンプトは200文字以内で入力してください")
+    .optional(),
   generateVoice: z.boolean().optional(),
   aiProvider: z.enum(["openai", "xai"]).optional().default("openai"),
 });
 
 // 新しい会話の作成
-export async function createConversation(characterId: string, isCustom: boolean = false) {
+export async function createConversation(
+  characterId: string,
+  isCustom: boolean = false,
+) {
   const session = await auth();
   if (!session || !session.user) {
     return {
@@ -26,7 +35,7 @@ export async function createConversation(characterId: string, isCustom: boolean 
 
   try {
     let character;
-    
+
     // キャラクターの取得
     if (isCustom) {
       character = await db.customCharacter.findUnique({
@@ -38,11 +47,12 @@ export async function createConversation(characterId: string, isCustom: boolean 
           ],
         },
       });
-      
+
       if (!character) {
         return {
           success: false,
-          error: "カスタムキャラクターが見つからないか、アクセス権限がありません",
+          error:
+            "カスタムキャラクターが見つからないか、アクセス権限がありません",
         };
       }
     } else {
@@ -52,7 +62,7 @@ export async function createConversation(characterId: string, isCustom: boolean 
           isPublic: true, // 公開されているキャラクターのみ
         },
       });
-      
+
       if (!character) {
         return {
           success: false,
@@ -60,18 +70,16 @@ export async function createConversation(characterId: string, isCustom: boolean 
         };
       }
     }
-    
+
     // 会話のタイトルを設定
     const title = `${character.name}との会話`;
-    
+
     // 会話の作成
     const conversation = await db.conversation.create({
       data: {
         title,
         userId: session.user.id,
-        ...(isCustom
-          ? { customCharacterId: characterId }
-          : { characterId }),
+        ...(isCustom ? { customCharacterId: characterId } : { characterId }),
         relationship: {
           create: {
             details: "初対面",
@@ -81,10 +89,10 @@ export async function createConversation(characterId: string, isCustom: boolean 
         },
       },
     });
-    
+
     // キャッシュの再検証
     revalidatePath("/chat");
-    
+
     return {
       success: true,
       data: conversation,
@@ -99,7 +107,10 @@ export async function createConversation(characterId: string, isCustom: boolean 
 }
 
 // メッセージの送信
-export async function sendMessage(conversationId: string, input: z.infer<typeof messageSchema>) {
+export async function sendMessage(
+  conversationId: string,
+  input: z.infer<typeof messageSchema>,
+) {
   const session = await auth();
   if (!session || !session.user) {
     return {
@@ -111,7 +122,7 @@ export async function sendMessage(conversationId: string, input: z.infer<typeof 
   try {
     // 入力データのバリデーション
     const validatedData = messageSchema.parse(input);
-    
+
     // チャットAPIを使用（RESTful APIエンドポイント経由）
     const response = await fetch(`${process.env.NEXTAUTH_URL}/api/chat`, {
       method: "POST",
@@ -126,32 +137,33 @@ export async function sendMessage(conversationId: string, input: z.infer<typeof 
         aiProvider: validatedData.aiProvider,
       }),
     });
-    
+
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.error || "メッセージの送信に失敗しました");
     }
-    
+
     const result = await response.json();
-    
+
     // キャッシュの再検証
     revalidatePath(`/chat/${conversationId}`);
-    
+
     return result;
   } catch (error) {
     console.error("メッセージ送信エラー:", error);
-    
+
     if (error instanceof z.ZodError) {
       return {
         success: false,
         error: error.errors[0].message,
       };
     }
-    
+
     return {
       success: false,
       error: (error as Error).message || "メッセージの送信に失敗しました",
-    };  }
+    };
+  }
 }
 
 // 会話の取得
@@ -160,7 +172,7 @@ export async function getConversationById(id: string) {
   if (!session || !session.user) {
     return null;
   }
-  
+
   return db.conversation.findUnique({
     where: {
       id,
@@ -190,7 +202,7 @@ export async function getUserConversations() {
   if (!session || !session.user) {
     return [];
   }
-  
+
   return db.conversation.findMany({
     where: {
       userId: session.user.id,
@@ -237,22 +249,22 @@ export async function deleteConversation(id: string) {
         userId: session.user.id,
       },
     });
-    
+
     if (!conversation) {
       return {
         success: false,
         error: "会話が見つからないか、アクセス権限がありません",
       };
     }
-    
+
     // 会話の削除
     await db.conversation.delete({
       where: { id },
     });
-    
+
     // キャッシュの再検証
     revalidatePath("/chat");
-    
+
     return {
       success: true,
       message: "会話を削除しました",

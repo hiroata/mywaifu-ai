@@ -31,12 +31,14 @@ export function useSubscription() {
         },
         body: JSON.stringify({ planId }),
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || "チェックアウトセッションの作成に失敗しました");
+        throw new Error(
+          error.message || "チェックアウトセッションの作成に失敗しました",
+        );
       }
-      
+
       return response.json();
     },
   });
@@ -47,12 +49,14 @@ export function useSubscription() {
       const response = await fetch("/api/subscription/portal", {
         method: "POST",
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || "ポータルセッションの作成に失敗しました");
+        throw new Error(
+          error.message || "ポータルセッションの作成に失敗しました",
+        );
       }
-      
+
       return response.json();
     },
   });
@@ -66,22 +70,30 @@ export function useSubscription() {
   const isActive = subscription?.status === "active";
 
   // 利用可能な機能をチェック
-  const canCreateCustomCharacter = isActive && (subscription?.plan === "PREMIUM" || subscription?.plan === "ULTIMATE");
+  const canCreateCustomCharacter =
+    isActive &&
+    (subscription?.plan === "PREMIUM" || subscription?.plan === "ULTIMATE");
   const hasUnlimitedMessages = isActive && subscription?.plan === "ULTIMATE";
   const canGenerateImages = isActive && subscription?.plan === "ULTIMATE";
-  const canUseVoice = isActive && (subscription?.plan === "PREMIUM" || subscription?.plan === "ULTIMATE");
+  const canUseVoice =
+    isActive &&
+    (subscription?.plan === "PREMIUM" || subscription?.plan === "ULTIMATE");
 
   // カスタムキャラクター作成の制限
-  const maxCustomCharacters = 
-    subscription?.plan === "ULTIMATE" ? Infinity :
-    subscription?.plan === "PREMIUM" ? 3 :
-    0;
+  const maxCustomCharacters =
+    subscription?.plan === "ULTIMATE"
+      ? Infinity
+      : subscription?.plan === "PREMIUM"
+        ? 3
+        : 0;
 
   // 1日あたりのメッセージ制限
   const maxMessagesPerDay =
-    subscription?.plan === "ULTIMATE" ? Infinity :
-    subscription?.plan === "PREMIUM" ? 50 :
-    5;
+    subscription?.plan === "ULTIMATE"
+      ? Infinity
+      : subscription?.plan === "PREMIUM"
+        ? 50
+        : 5;
 
   return {
     subscription,

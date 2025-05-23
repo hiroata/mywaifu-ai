@@ -20,11 +20,11 @@ export function ChatWindow({ conversationId }: ChatWindowProps) {
   const { character } = useCharacter(conversationId);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const showScrollDownRef = useRef(false);
-  
+
   const sortedMessages = [...messages].sort(
-    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
   );
-  
+
   // チャットをスクロールダウンする
   const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
     if (chatContainerRef.current) {
@@ -34,39 +34,39 @@ export function ChatWindow({ conversationId }: ChatWindowProps) {
       });
     }
   };
-  
+
   // 新しいメッセージが来たら自動スクロール
   useEffect(() => {
     scrollToBottom();
   }, [messages.length]);
-  
+
   // スクロール状態の監視
   useEffect(() => {
     const chatContainer = chatContainerRef.current;
     if (!chatContainer) return;
-    
+
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = chatContainer;
       // 下から100px以上離れたらスクロールダウンボタンを表示
       showScrollDownRef.current = scrollHeight - scrollTop - clientHeight > 100;
     };
-    
+
     chatContainer.addEventListener("scroll", handleScroll);
     return () => {
       chatContainer.removeEventListener("scroll", handleScroll);
     };
   }, []);
-  
+
   // メッセージ再生成処理
   const handleRegenerate = (messageId: string) => {
     regenerateMessage(conversationId, messageId);
   };
-  
+
   // メッセージ削除処理
   const handleDelete = (messageId: string) => {
     deleteMessage(conversationId, messageId);
   };
-  
+
   return (
     <div className="flex flex-col h-full bg-white dark:bg-neutral-950">
       {/* キャラクターヘッダー */}
@@ -77,18 +77,25 @@ export function ChatWindow({ conversationId }: ChatWindowProps) {
               {character.name.charAt(0)}
             </div>
             <div>
-              <h2 className="font-medium text-neutral-900 dark:text-neutral-100">{character.name}</h2>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">{character.tagline || "AI コンパニオン"}</p>
+              <h2 className="font-medium text-neutral-900 dark:text-neutral-100">
+                {character.name}
+              </h2>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                {character.tagline || "AI コンパニオン"}
+              </p>
             </div>
           </div>
           <Button variant="ghost" size="icon" className="rounded-full">
-            <Settings2 size={18} className="text-neutral-600 dark:text-neutral-400" />
+            <Settings2
+              size={18}
+              className="text-neutral-600 dark:text-neutral-400"
+            />
           </Button>
         </div>
       )}
-      
+
       {/* メッセージエリア */}
-      <div 
+      <div
         ref={chatContainerRef}
         className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-300 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent"
       >
@@ -106,14 +113,17 @@ export function ChatWindow({ conversationId }: ChatWindowProps) {
             </Button>
           </div>
         )}
-        
+
         {/* メッセージリスト */}
         {sortedMessages.length === 0 && !isLoading ? (
           <div className="h-full flex flex-col items-center justify-center p-4">
             <div className="max-w-md mx-auto text-center space-y-4">
-              <h3 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">会話を始めましょう</h3>
+              <h3 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+                会話を始めましょう
+              </h3>
               <p className="text-neutral-600 dark:text-neutral-400">
-                メッセージを送信して{character?.name || "AI"}との会話を開始してください。
+                メッセージを送信して{character?.name || "AI"}
+                との会話を開始してください。
                 質問や悩み、雑談などなんでもどうぞ。
               </p>
             </div>
@@ -125,12 +135,16 @@ export function ChatWindow({ conversationId }: ChatWindowProps) {
                 <ChatMessage
                   key={message.id}
                   message={message}
-                  onRegenerate={message.role === "assistant" ? () => handleRegenerate(message.id) : undefined}
+                  onRegenerate={
+                    message.role === "assistant"
+                      ? () => handleRegenerate(message.id)
+                      : undefined
+                  }
                   onDelete={() => handleDelete(message.id)}
                 />
               ))}
             </AnimatePresence>
-            
+
             {/* ローディングスケルトン */}
             {isLoading && (
               <div className="py-4 px-6 bg-neutral-50 dark:bg-neutral-900/50">
@@ -153,7 +167,7 @@ export function ChatWindow({ conversationId }: ChatWindowProps) {
           </div>
         )}
       </div>
-      
+
       {/* スクロールダウンボタン */}
       <AnimatePresence>
         {showScrollDownRef.current && (
@@ -174,7 +188,7 @@ export function ChatWindow({ conversationId }: ChatWindowProps) {
           </motion.div>
         )}
       </AnimatePresence>
-      
+
       {/* チャット入力 */}
       <div className="sticky bottom-0 z-10">
         <ChatInput conversationId={conversationId} />

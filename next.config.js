@@ -1,15 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: {
-    ignoreBuildErrors: true
+    ignoreBuildErrors: true,
   },
   eslint: {
-    ignoreDuringBuilds: true
+    ignoreDuringBuilds: true,
   },
   swcMinify: true,
   images: {
-    unoptimized: true
-  }
+    unoptimized: true,
+  },
 };
 
 module.exports = nextConfig;

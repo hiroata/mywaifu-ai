@@ -9,7 +9,7 @@ const openai = new OpenAI({
 
 // システムプロンプトテンプレート
 export const createSystemPrompt = (character: any) => {
-  return `あなたは${character.name}という${character.gender === 'female' ? '女性' : '男性'}です。年齢は${character.age}歳です。
+  return `あなたは${character.name}という${character.gender === "female" ? "女性" : "男性"}です。年齢は${character.age}歳です。
 ${character.description}
 
 あなたの性格: ${character.personality}
@@ -28,17 +28,16 @@ ${character.description}
 export async function createChatCompletion(
   messages: ChatCompletionMessageParam[],
   character: any,
-  relationship?: string
+  relationship?: string,
 ) {
   // システムプロンプトを追加
-  const systemPrompt = createSystemPrompt(character)
-    .replace("{relationship}", relationship || "初対面");
-    
-  const allMessages = [
-    { role: "system", content: systemPrompt },
-    ...messages
-  ];
-  
+  const systemPrompt = createSystemPrompt(character).replace(
+    "{relationship}",
+    relationship || "初対面",
+  );
+
+  const allMessages = [{ role: "system", content: systemPrompt }, ...messages];
+
   // OpenAI APIリクエスト
   const completion = await openai.chat.completions.create({
     model: "gpt-4o",
@@ -49,21 +48,18 @@ export async function createChatCompletion(
     frequency_penalty: 0.5,
     presence_penalty: 0.5,
   });
-  
+
   return completion.choices[0].message;
 }
 
 // 画像生成リクエスト
-export async function generateImage(
-  prompt: string,
-  character: any
-) {
+export async function generateImage(prompt: string, character: any) {
   // AIへの指示を生成
-  const enhancedPrompt = `高品質な実写のような画像を生成: ${character.name}という${character.gender === 'female' ? '女性' : '男性'}。
+  const enhancedPrompt = `高品質な実写のような画像を生成: ${character.name}という${character.gender === "female" ? "女性" : "男性"}。
 ${character.description}
 このシーン: ${prompt}
 スタイル: 写実的、詳細、高解像度、映画のような品質`;
-  
+
   // OpenAI DALL-E 3 リクエスト
   const response = await openai.images.generate({
     model: "dall-e-3",
@@ -71,6 +67,6 @@ ${character.description}
     n: 1,
     size: "1024x1024",
   });
-  
+
   return response.data[0].url;
 }

@@ -7,7 +7,11 @@ import { useChatStore } from "@/store/chat-store";
 import { useSubscription } from "@/hooks/use-subscription";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { ImageIcon, SendIcon, MicIcon, SparklesIcon } from "lucide-react";
@@ -17,22 +21,23 @@ interface ChatInputProps {
   conversationId: string;
 }
 
-export function ChatInput({ conversationId }: ChatInputProps) {  const [message, setMessage] = useState("");
+export function ChatInput({ conversationId }: ChatInputProps) {
+  const [message, setMessage] = useState("");
   const [imagePrompt, setImagePrompt] = useState("");
   const [showImageInput, setShowImageInput] = useState(false);
   const [generateVoice, setGenerateVoice] = useState(false);
   const [aiProvider, setAiProvider] = useState<"openai" | "xai">("openai");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  
+
   const { sendMessage, isSending } = useChat(conversationId);
   const { isLoading } = useChatStore();
   const { canGenerateImages, canUseVoice } = useSubscription();
-    // メッセージ送信ハンドラー
+  // メッセージ送信ハンドラー
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     if (!message.trim() || isSending) return;
-    
+
     try {
       await sendMessage({
         content: message,
@@ -40,7 +45,7 @@ export function ChatInput({ conversationId }: ChatInputProps) {  const [message,
         generateVoice,
         aiProvider, // AIプロバイダを追加
       });
-      
+
       // 入力フィールドをリセット
       setMessage("");
       setImagePrompt("");
@@ -49,7 +54,7 @@ export function ChatInput({ conversationId }: ChatInputProps) {  const [message,
       console.error("メッセージ送信エラー:", error);
     }
   };
-  
+
   // テキストエリアの高さを自動調整
   useEffect(() => {
     if (textareaRef.current) {
@@ -57,7 +62,7 @@ export function ChatInput({ conversationId }: ChatInputProps) {  const [message,
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }, [message]);
-    return (
+  return (
     <div className="border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 p-4 backdrop-blur-lg bg-opacity-80 dark:bg-opacity-80">
       <form onSubmit={handleSubmit} className="flex flex-col space-y-3">
         {/* 画像生成プロンプト */}
@@ -83,7 +88,7 @@ export function ChatInput({ conversationId }: ChatInputProps) {  const [message,
             </Button>
           </div>
         )}
-          {/* メインのチャット入力 */}
+        {/* メインのチャット入力 */}
         <div className="flex items-end space-x-3">
           <div className="relative flex-1">
             <Textarea
@@ -102,7 +107,8 @@ export function ChatInput({ conversationId }: ChatInputProps) {  const [message,
                   }
                 }
               }}
-            />            <div className="absolute bottom-2 right-2 flex items-center space-x-1">
+            />{" "}
+            <div className="absolute bottom-2 right-2 flex items-center space-x-1">
               {/* 画像生成ボタン */}
               {canGenerateImages && (
                 <Button
@@ -113,16 +119,26 @@ export function ChatInput({ conversationId }: ChatInputProps) {  const [message,
                   onClick={() => setShowImageInput(!showImageInput)}
                   className={cn(
                     "h-8 w-8 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors",
-                    showImageInput && "bg-neutral-100 dark:bg-neutral-800 text-blue-600 dark:text-blue-400"
+                    showImageInput &&
+                      "bg-neutral-100 dark:bg-neutral-800 text-blue-600 dark:text-blue-400",
                   )}
                 >
-                  <ImageIcon size={18} className={cn(showImageInput ? "text-blue-600 dark:text-blue-400" : "text-neutral-600 dark:text-neutral-400")} />
+                  <ImageIcon
+                    size={18}
+                    className={cn(
+                      showImageInput
+                        ? "text-blue-600 dark:text-blue-400"
+                        : "text-neutral-600 dark:text-neutral-400",
+                    )}
+                  />
                 </Button>
               )}
             </div>
           </div>
-          
-          {/* 音声・送信ボタン */}          <div className="flex items-center space-x-3">            {/* AI選択ポップオーバー */}
+          {/* 音声・送信ボタン */}{" "}
+          <div className="flex items-center space-x-3">
+            {" "}
+            {/* AI選択ポップオーバー */}
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -132,7 +148,8 @@ export function ChatInput({ conversationId }: ChatInputProps) {  const [message,
                   disabled={isSending || isLoading}
                   className={cn(
                     "h-11 w-11 rounded-full border-neutral-200 dark:border-neutral-800 transition-all duration-200",
-                    aiProvider === "xai" && "bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-700/50"
+                    aiProvider === "xai" &&
+                      "bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-700/50",
                   )}
                 >
                   <SparklesIcon size={18} />
@@ -140,9 +157,19 @@ export function ChatInput({ conversationId }: ChatInputProps) {  const [message,
               </PopoverTrigger>
               <PopoverContent className="w-64 p-4">
                 <div className="space-y-4">
-                  <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">AIモデルを選択</div>
+                  <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">
+                    AIモデルを選択
+                  </div>
                   <div className="flex items-center justify-between space-x-3">
-                    <Label htmlFor="openai-toggle" className={cn("font-medium", aiProvider === "openai" ? "text-blue-600 dark:text-blue-400" : "text-neutral-600 dark:text-neutral-400")}>
+                    <Label
+                      htmlFor="openai-toggle"
+                      className={cn(
+                        "font-medium",
+                        aiProvider === "openai"
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-neutral-600 dark:text-neutral-400",
+                      )}
+                    >
                       OpenAI
                     </Label>
                     <Switch
@@ -154,7 +181,15 @@ export function ChatInput({ conversationId }: ChatInputProps) {  const [message,
                     />
                   </div>
                   <div className="flex items-center justify-between space-x-3">
-                    <Label htmlFor="xai-toggle" className={cn("font-medium", aiProvider === "xai" ? "text-purple-600 dark:text-purple-400" : "text-neutral-600 dark:text-neutral-400")}>
+                    <Label
+                      htmlFor="xai-toggle"
+                      className={cn(
+                        "font-medium",
+                        aiProvider === "xai"
+                          ? "text-purple-600 dark:text-purple-400"
+                          : "text-neutral-600 dark:text-neutral-400",
+                      )}
+                    >
                       xAI (Grok)
                     </Label>
                     <Switch
@@ -168,7 +203,7 @@ export function ChatInput({ conversationId }: ChatInputProps) {  const [message,
                 </div>
               </PopoverContent>
             </Popover>
-              {/* 音声合成設定 */}
+            {/* 音声合成設定 */}
             {canUseVoice && (
               <Popover>
                 <PopoverTrigger asChild>
@@ -179,7 +214,8 @@ export function ChatInput({ conversationId }: ChatInputProps) {  const [message,
                     disabled={isSending || isLoading}
                     className={cn(
                       "h-11 w-11 rounded-full border-neutral-200 dark:border-neutral-800 transition-all duration-200",
-                      generateVoice && "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-700/50"
+                      generateVoice &&
+                        "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-700/50",
                     )}
                   >
                     <MicIcon size={18} />
@@ -187,7 +223,12 @@ export function ChatInput({ conversationId }: ChatInputProps) {  const [message,
                 </PopoverTrigger>
                 <PopoverContent className="w-64 p-4">
                   <div className="flex items-center justify-between space-x-3">
-                    <Label htmlFor="voice-toggle" className="font-medium text-neutral-900 dark:text-neutral-50">音声で応答</Label>
+                    <Label
+                      htmlFor="voice-toggle"
+                      className="font-medium text-neutral-900 dark:text-neutral-50"
+                    >
+                      音声で応答
+                    </Label>
                     <Switch
                       id="voice-toggle"
                       checked={generateVoice}
@@ -197,7 +238,6 @@ export function ChatInput({ conversationId }: ChatInputProps) {  const [message,
                 </PopoverContent>
               </Popover>
             )}
-            
             {/* 送信ボタン */}
             <Button
               type="submit"
@@ -213,14 +253,14 @@ export function ChatInput({ conversationId }: ChatInputProps) {  const [message,
           </div>
         </div>
       </form>
-        {/* サブスクリプションのアップグレード促進 */}
+      {/* サブスクリプションのアップグレード促進 */}
       {(!canGenerateImages || !canUseVoice) && (
         <div className="mt-3 text-center text-xs text-neutral-500 dark:text-neutral-400">
           <Button
             variant="link"
             size="sm"
             className="h-auto p-0 text-xs text-blue-600 dark:text-blue-400 font-medium"
-            onClick={() => window.location.href = "/subscription"}
+            onClick={() => (window.location.href = "/subscription")}
           >
             プランをアップグレード
           </Button>

@@ -21,7 +21,7 @@ import {
   Edit,
   Trash,
   Copy,
-  Users
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -43,30 +43,31 @@ interface CharacterGridProps {
 export function CharacterGrid({ characters }: CharacterGridProps) {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   // 検索フィルタリング
-  const filteredCharacters = characters.filter((character) =>
-    character.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    character.tagline.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    character.description.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredCharacters = characters.filter(
+    (character) =>
+      character.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      character.tagline.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      character.description.toLowerCase().includes(searchQuery.toLowerCase()),
   );
-  
+
   // アニメーションバリアント
   const containerVariants = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
-  
+
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 }
+    show: { opacity: 1, y: 0 },
   };
-  
+
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto w-full">
       <div className="flex flex-col space-y-6">
@@ -75,7 +76,7 @@ export function CharacterGrid({ characters }: CharacterGridProps) {
           <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
             あなたのキャラクター
           </h1>
-          
+
           <div className="flex flex-col md:flex-row gap-3">
             {/* 検索バー */}
             <div className="relative w-full md:w-auto">
@@ -87,7 +88,7 @@ export function CharacterGrid({ characters }: CharacterGridProps) {
                 className="pl-9 w-full md:w-[240px] bg-white dark:bg-neutral-900"
               />
             </div>
-            
+
             {/* ビュー切り替え */}
             <div className="flex items-center space-x-2 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-1">
               <Button
@@ -96,7 +97,7 @@ export function CharacterGrid({ characters }: CharacterGridProps) {
                 onClick={() => setViewMode("grid")}
                 className={cn(
                   "h-8 px-2 rounded-md",
-                  viewMode === "grid" && "bg-neutral-100 dark:bg-neutral-800"
+                  viewMode === "grid" && "bg-neutral-100 dark:bg-neutral-800",
                 )}
               >
                 <Grid size={18} />
@@ -107,13 +108,13 @@ export function CharacterGrid({ characters }: CharacterGridProps) {
                 onClick={() => setViewMode("list")}
                 className={cn(
                   "h-8 px-2 rounded-md",
-                  viewMode === "list" && "bg-neutral-100 dark:bg-neutral-800"
+                  viewMode === "list" && "bg-neutral-100 dark:bg-neutral-800",
                 )}
               >
                 <List size={18} />
               </Button>
             </div>
-            
+
             {/* 新規作成ボタン */}
             <Link href="/create-character">
               <Button className="gap-1 md:gap-2">
@@ -123,7 +124,7 @@ export function CharacterGrid({ characters }: CharacterGridProps) {
             </Link>
           </div>
         </div>
-        
+
         {/* キャラクターがない場合 */}
         {filteredCharacters.length === 0 && (
           <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-8 text-center">
@@ -132,7 +133,9 @@ export function CharacterGrid({ characters }: CharacterGridProps) {
                 <Users size={24} className="text-blue-600 dark:text-blue-400" />
               </div>
               <h3 className="text-lg font-medium text-neutral-900 dark:text-neutral-100">
-                {searchQuery ? "検索結果がありません" : "キャラクターがまだありません"}
+                {searchQuery
+                  ? "検索結果がありません"
+                  : "キャラクターがまだありません"}
               </h3>
               <p className="text-neutral-600 dark:text-neutral-400">
                 {searchQuery
@@ -152,13 +155,14 @@ export function CharacterGrid({ characters }: CharacterGridProps) {
             </div>
           </div>
         )}
-          {/* グリッドビュー */}
+        {/* グリッドビュー */}
         {viewMode === "grid" && filteredCharacters.length > 0 && (
           <motion.div
             variants={containerVariants}
             initial="hidden"
             animate="show"
-            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"          >
+            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
+          >
             {filteredCharacters.map((character) => (
               <motion.div key={character.id} variants={itemVariants}>
                 <CharacterCard
@@ -166,19 +170,22 @@ export function CharacterGrid({ characters }: CharacterGridProps) {
                   name={character.name}
                   tagline={character.tagline}
                   avatarUrl={character.avatarUrl}
-                  isNew={new Date().getTime() - character.createdAt.getTime() < 7 * 24 * 60 * 60 * 1000} // 1週間以内なら新着
+                  isNew={
+                    new Date().getTime() - character.createdAt.getTime() <
+                    7 * 24 * 60 * 60 * 1000
+                  } // 1週間以内なら新着
                   isOnline={Math.random() > 0.7} // ランダムなオンライン状態（実際にはAPIから取得）
                   isFavorite={false}
                   onFavoriteToggle={() => {
                     // お気に入り登録のロジック
                     console.log(`Toggle favorite for ${character.name}`);
                   }}
-                />
+                />{" "}
               </motion.div>
             ))}
           </motion.div>
-        )}}
-        
+        )}
+
         {/* リストビュー */}
         {viewMode === "list" && filteredCharacters.length > 0 && (
           <motion.div
@@ -221,17 +228,25 @@ export function CharacterGrid({ characters }: CharacterGridProps) {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <Link href={`/characters/edit/${character.id}`} onClick={(e) => e.stopPropagation()}>
+                                <Link
+                                  href={`/characters/edit/${character.id}`}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
                                   <DropdownMenuItem>
                                     <Edit className="mr-2 h-4 w-4" />
                                     編集
                                   </DropdownMenuItem>
                                 </Link>
-                                <DropdownMenuItem onClick={(e) => e.preventDefault()}>
+                                <DropdownMenuItem
+                                  onClick={(e) => e.preventDefault()}
+                                >
                                   <Copy className="mr-2 h-4 w-4" />
                                   複製
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={(e) => e.preventDefault()} className="text-red-600 dark:text-red-400">
+                                <DropdownMenuItem
+                                  onClick={(e) => e.preventDefault()}
+                                  className="text-red-600 dark:text-red-400"
+                                >
                                   <Trash className="mr-2 h-4 w-4" />
                                   削除
                                 </DropdownMenuItem>

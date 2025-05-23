@@ -7,7 +7,14 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { FaGoogle } from "react-icons/fa";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -81,9 +88,9 @@ export default function RegisterPage() {
     setError("");
     setIsLoading(true);
     // callbackUrlを絶対URLに変更し、redirectをtrueに設定して強制的にリダイレクト
-    signIn("google", { 
+    signIn("google", {
       callbackUrl: `${window.location.origin}/dashboard`,
-      redirect: true
+      redirect: true,
     });
   };
 
@@ -91,7 +98,9 @@ export default function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold">MyWaifuAIに新規登録</CardTitle>
+          <CardTitle className="text-2xl font-bold">
+            MyWaifuAIに新規登録
+          </CardTitle>
           <CardDescription>
             アカウントを作成して、AIキャラクターとの会話を始めましょう
           </CardDescription>
@@ -168,10 +177,10 @@ export default function RegisterPage() {
             </div>
 
             <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="terms" 
-                checked={agreeTerms} 
-                onCheckedChange={(checked) => setAgreeTerms(checked as boolean)} 
+              <Checkbox
+                id="terms"
+                checked={agreeTerms}
+                onCheckedChange={(checked) => setAgreeTerms(checked as boolean)}
                 disabled={isLoading}
               />
               <Label htmlFor="terms" className="text-sm text-gray-600">

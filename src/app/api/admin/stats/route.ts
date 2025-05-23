@@ -14,14 +14,14 @@ export async function GET(request: NextRequest) {
         premiumUsers: 20,
         ultimateUsers: 5,
         recentCharacters: [],
-        recentActivity: []
-      }
+        recentActivity: [],
+      },
     });
   } catch (error) {
     console.error("統計API エラー:", error);
     return NextResponse.json(
       { error: "統計の取得中にエラーが発生しました" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

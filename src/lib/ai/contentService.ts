@@ -6,7 +6,7 @@ export async function generateAIContent({
   prompt,
   model,
   provider,
-  apiKeys
+  apiKeys,
 }: {
   prompt: string;
   model?: string;

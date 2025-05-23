@@ -25,14 +25,14 @@ export default function CharacterUploadForm() {
     personality: "",
     isPublic: true,
   });
-  
+
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  
+
   // タグの追加
   const addTag = () => {
     if (newTag && !tags.includes(newTag)) {
@@ -67,59 +67,67 @@ export default function CharacterUploadForm() {
 
     try {
       const submitData = new FormData();
-      
+
       // フォームデータをFormDataに追加
       Object.entries(formData).forEach(([key, value]) => {
         submitData.append(key, value.toString());
       });
-      
+
       // タグをJSON文字列に変換して追加
       submitData.append("tags", JSON.stringify(tags));
-      
+
       // プロフィール画像を追加
       if (profileImage) {
         submitData.append("profileImage", profileImage);
       }
-      
+
       // APIエンドポイントにPOSTリクエスト
       const response = await fetch("/api/characters/custom", {
         method: "POST",
         body: submitData,
       });
-      
+
       const data = await response.json();
-      
+
       if (!data.success) {
         throw new Error(data.error || "キャラクターの作成に失敗しました");
       }
-      
+
       // 成功した場合、キャラクター一覧ページに遷移
       router.push("/characters");
       router.refresh();
     } catch (err) {
       console.error(err);
-      setError(err instanceof Error ? err.message : "キャラクターの作成に失敗しました");
+      setError(
+        err instanceof Error ? err.message : "キャラクターの作成に失敗しました",
+      );
     } finally {
       setLoading(false);
     }
   };
 
   // フォーム入力の更新
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
   return (
     <div className="container max-w-3xl mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-8 text-center">新しいキャラクターを作成</h1>
-      
+      <h1 className="text-3xl font-bold mb-8 text-center">
+        新しいキャラクターを作成
+      </h1>
+
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
           {error}
         </div>
       )}
-      
+
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* 名前 */}
         <div>
@@ -133,7 +141,7 @@ export default function CharacterUploadForm() {
             required
           />
         </div>
-        
+
         {/* 年齢 */}
         <div>
           <Label htmlFor="age">年齢 *</Label>
@@ -148,7 +156,7 @@ export default function CharacterUploadForm() {
             required
           />
         </div>
-        
+
         {/* 性別 */}
         <div>
           <Label htmlFor="gender">性別 *</Label>
@@ -165,7 +173,7 @@ export default function CharacterUploadForm() {
             <option value="other">その他</option>
           </select>
         </div>
-        
+
         {/* キャラクタータイプ */}
         <div>
           <Label htmlFor="type">タイプ *</Label>
@@ -181,7 +189,7 @@ export default function CharacterUploadForm() {
             <option value="anime">アニメ</option>
           </select>
         </div>
-        
+
         {/* 短い説明 */}
         <div>
           <Label htmlFor="shortDescription">短い説明</Label>
@@ -194,7 +202,7 @@ export default function CharacterUploadForm() {
             maxLength={100}
           />
         </div>
-        
+
         {/* 詳細な説明 */}
         <div>
           <Label htmlFor="description">詳細な説明 *</Label>
@@ -208,7 +216,7 @@ export default function CharacterUploadForm() {
             required
           />
         </div>
-        
+
         {/* 性格 */}
         <div>
           <Label htmlFor="personality">性格 *</Label>
@@ -222,7 +230,7 @@ export default function CharacterUploadForm() {
             required
           />
         </div>
-        
+
         {/* タグ */}
         <div>
           <Label htmlFor="newTag">タグ</Label>
@@ -256,7 +264,7 @@ export default function CharacterUploadForm() {
             ))}
           </div>
         </div>
-        
+
         {/* プロファイル画像 */}
         <div>
           <Label htmlFor="profileImage">プロファイル画像 *</Label>
@@ -282,7 +290,7 @@ export default function CharacterUploadForm() {
             </div>
           )}
         </div>
-        
+
         {/* 公開設定 */}
         <div className="flex items-center gap-2">
           <Switch
@@ -294,7 +302,7 @@ export default function CharacterUploadForm() {
           />
           <Label htmlFor="isPublic">公開する</Label>
         </div>
-        
+
         {/* 送信ボタン */}
         <div className="pt-4">
           <Button type="submit" className="w-full" disabled={loading}>

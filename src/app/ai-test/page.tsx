@@ -18,7 +18,7 @@ export default function AiTestPage() {
       const res = await fetch("/api/ai/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt })
+        body: JSON.stringify({ prompt }),
       });
       const data = await res.json();
       if (data.result) {
@@ -39,7 +39,7 @@ export default function AiTestPage() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <Textarea
           value={prompt}
-          onChange={e => setPrompt(e.target.value)}
+          onChange={(e) => setPrompt(e.target.value)}
           rows={5}
           placeholder="AIに書かせたい小説のテーマや指示を入力してください"
           required
@@ -54,9 +54,7 @@ export default function AiTestPage() {
           <pre className="whitespace-pre-wrap text-sm">{result}</pre>
         </div>
       )}
-      {error && (
-        <div className="mt-4 text-red-600">{error}</div>
-      )}
+      {error && <div className="mt-4 text-red-600">{error}</div>}
     </div>
   );
 }

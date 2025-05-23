@@ -9,5 +9,5 @@ export const fontSans = Inter({
 
 // ダミーのSF Pro設定（テスト用）
 export const fontSFPro = {
-  variable: '--font-sf-pro',
+  variable: "--font-sf-pro",
 };

@@ -1,6 +1,6 @@
 // src/lib/stripe.ts
-import Stripe from 'stripe';
-import { db } from './db';
+import Stripe from "stripe";
+import { db } from "./db";
 
 // Stripe APIクライアント初期化
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -16,7 +16,7 @@ export const PLANS = {
     features: [
       "プリセットキャラクターとの会話",
       "1日5回までのAI会話",
-      "テキストチャットのみ"
+      "テキストチャットのみ",
     ],
     stripePriceId: "",
   },
@@ -28,7 +28,7 @@ export const PLANS = {
       "カスタムキャラクターの作成（最大3体）",
       "1日50回までのAI会話",
       "音声チャット機能",
-      "優先サポート"
+      "優先サポート",
     ],
     stripePriceId: process.env.STRIPE_PREMIUM_PRICE_ID,
   },
@@ -41,7 +41,7 @@ export const PLANS = {
       "無制限のAI会話",
       "音声・画像生成機能",
       "VIP優先サポート",
-      "最新機能への早期アクセス"
+      "最新機能への早期アクセス",
     ],
     stripePriceId: process.env.STRIPE_ULTIMATE_PRICE_ID,
   },

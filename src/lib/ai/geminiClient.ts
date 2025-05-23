@@ -11,9 +11,9 @@ export class GeminiClient {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }]
-        })
-      }
+          contents: [{ parts: [{ text: prompt }] }],
+        }),
+      },
     );
     if (!res.ok) throw new Error("Gemini API error");
     const data = await res.json();

@@ -1,35 +1,41 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
-import { db } from '@/lib/db';
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
     // ユーザー認証の確認
     const session = await auth();
     if (!session || !session.user) {
-      return NextResponse.json({ success: false, error: "認証が必要です" }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: "認証が必要です" },
+        { status: 401 },
+      );
     }
-    
+
     const contentId = params.id;
     const userId = session.user.id;
-    
+
     // コンテンツの存在確認
     const content = await db.characterContent.findUnique({
       where: {
         id: contentId,
       },
     });
-    
+
     if (!content) {
-      return NextResponse.json({ 
-        success: false, 
-        error: "コンテンツが見つかりませんでした" 
-      }, { status: 404 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: "コンテンツが見つかりませんでした",
+        },
+        { status: 404 },
+      );
     }
-    
+
     // ユーザーがすでにいいねしているか確認
     const existingLike = await db.contentLike.findUnique({
       where: {
@@ -39,7 +45,7 @@ export async function POST(
         },
       },
     });
-    
+
     if (existingLike) {
       // いいねを解除
       await db.contentLike.delete({
@@ -50,18 +56,18 @@ export async function POST(
           },
         },
       });
-      
+
       // いいね数を減らす
       const updatedContent = await db.characterContent.update({
         where: { id: contentId },
         data: { likes: { decrement: 1 } },
       });
-      
+
       return NextResponse.json({
         success: true,
-        data: { 
+        data: {
           liked: false,
-          likes: updatedContent.likes
+          likes: updatedContent.likes,
         },
       });
     } else {
@@ -72,26 +78,29 @@ export async function POST(
           contentId,
         },
       });
-      
+
       // いいね数を増やす
       const updatedContent = await db.characterContent.update({
         where: { id: contentId },
         data: { likes: { increment: 1 } },
       });
-      
+
       return NextResponse.json({
         success: true,
-        data: { 
+        data: {
           liked: true,
-          likes: updatedContent.likes
+          likes: updatedContent.likes,
         },
       });
     }
   } catch (error) {
     console.error("いいねエラー:", error);
-    return NextResponse.json({
-      success: false,
-      error: "いいねの処理に失敗しました",
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: "いいねの処理に失敗しました",
+      },
+      { status: 500 },
+    );
   }
 }

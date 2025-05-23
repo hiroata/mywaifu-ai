@@ -1,10 +1,11 @@
 // src/lib/xai.ts
 import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
-import { v4 as uuidv4 } from 'uuid';
-import { config } from './config';
-import { saveFile, createErrorResponse } from './utils';
-import * as fs from 'fs';
-import * as path from 'path';
+import { v4 as uuidv4 } from "uuid";
+import { config } from "./config";
+import { saveFile } from "./utils/file-utils";
+import { createApiError } from "./utils/index";
+import * as fs from "fs";
+import * as path from "path";
 
 const { apiKey, baseUrl } = config.api.xai;
 const { defaultModel, models } = config.models.xai;
@@ -37,7 +38,9 @@ export class XAIClient {
     this.saveResponses = options.saveResponses || false;
 
     if (!this.apiKey) {
-      console.warn("xAI API key is not set. Please set XAI_API_KEY in your environment variables.");
+      console.warn(
+        "xAI API key is not set. Please set XAI_API_KEY in your environment variables.",
+      );
     }
   }
 
@@ -45,7 +48,7 @@ export class XAIClient {
   async createChatCompletion(
     messages: ChatCompletionMessageParam[],
     model = defaultModel,
-    options: XAIChatCompletionOptions = {}
+    options: XAIChatCompletionOptions = {},
   ) {
     if (!this.apiKey) {
       throw new Error("xAI API key is not set");
@@ -58,21 +61,21 @@ export class XAIClient {
       top_p: 1.0,
       frequency_penalty: 0,
       presence_penalty: 0,
-      ...options
+      ...options,
     };
 
     try {
       const response = await fetch(`${this.apiUrl}/chat/completions`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.apiKey}`,
         },
         body: JSON.stringify({
           model,
           messages,
-          ...params
-        })
+          ...params,
+        }),
       });
 
       if (!response.ok) {
@@ -82,46 +85,46 @@ export class XAIClient {
 
       const data = await response.json();
       let assistantMessage = data.choices[0].message;
-      
+
       // 応答の保存（オプション）
       if (this.saveResponses) {
         this.saveResponseToFile(messages, assistantMessage, model, params);
       }
-      
+
       return assistantMessage;
     } catch (error) {
       console.error("xAI API Error:", error);
       throw error;
     }
   }
-  
+
   // 応答をファイルに保存する
   private saveResponseToFile(
     messages: ChatCompletionMessageParam[],
     response: any,
     model: string,
-    params: any
+    params: any,
   ) {
     try {
       // データディレクトリの確認と作成
-      const dataDir = path.join(process.cwd(), 'data', 'xai-responses');
+      const dataDir = path.join(process.cwd(), "data", "xai-responses");
       if (!fs.existsSync(dataDir)) {
         fs.mkdirSync(dataDir, { recursive: true });
       }
-      
+
       const responseObj = {
         id: uuidv4(),
         timestamp: new Date().toISOString(),
         model,
         params,
         messages,
-        response
+        response,
       };
-      
+
       // JSONファイルに保存
       fs.writeFileSync(
         path.join(dataDir, `${responseObj.id}.json`),
-        JSON.stringify(responseObj, null, 2)
+        JSON.stringify(responseObj, null, 2),
       );
     } catch (error) {
       console.error("Failed to save xAI response:", error);
@@ -135,7 +138,7 @@ const xaiClient = new XAIClient();
 
 // システムプロンプトテンプレート
 export const createSystemPrompt = (character: any) => {
-  return `あなたは${character.name}という${character.gender === 'female' ? '女性' : '男性'}です。年齢は${character.age}歳です。
+  return `あなたは${character.name}という${character.gender === "female" ? "女性" : "男性"}です。年齢は${character.age}歳です。
 ${character.description}
 
 あなたの性格: ${character.personality}
@@ -155,45 +158,40 @@ ${character.description}
 export async function createChatCompletion(
   messages: ChatCompletionMessageParam[],
   character: any,
-  relationship?: string
+  relationship?: string,
 ) {
   // システムプロンプトを追加
-  const systemPrompt = createSystemPrompt(character)
-    .replace("{relationship}", relationship || "初対面");
-    
+  const systemPrompt = createSystemPrompt(character).replace(
+    "{relationship}",
+    relationship || "初対面",
+  );
+
   const allMessages = [
     { role: "system", content: systemPrompt } as ChatCompletionMessageParam,
-    ...messages
+    ...messages,
   ];
-  
+
   // xAI APIリクエスト
-  return await xaiClient.createChatCompletion(
-    allMessages,
-    defaultModel,
-    {
-      temperature: 0.9,
-      max_tokens: 1000,
-      top_p: 1,
-      frequency_penalty: 0.5,
-      presence_penalty: 0.5,
-    }
-  );
+  return await xaiClient.createChatCompletion(allMessages, defaultModel, {
+    temperature: 0.9,
+    max_tokens: 1000,
+    top_p: 1,
+    frequency_penalty: 0.5,
+    presence_penalty: 0.5,
+  });
 }
 
 // 画像生成プロンプト作成（xAIは画像生成に対応していないため、プロンプト生成のみ）
-export async function generateImagePrompt(
-  prompt: string,
-  character: any
-) {
+export async function generateImagePrompt(prompt: string, character: any) {
   // AIへの指示を生成
-  const enhancedPrompt = `高品質な${character.type === 'anime' ? 'アニメ風' : '実写のような'}画像を生成するためのプロンプトを作成: 
-${character.name}という${character.gender === 'female' ? '女性' : '男性'}。
+  const enhancedPrompt = `高品質な${character.type === "anime" ? "アニメ風" : "実写のような"}画像を生成するためのプロンプトを作成: 
+${character.name}という${character.gender === "female" ? "女性" : "男性"}。
 ${character.description}
 このシーン: ${prompt}
-スタイル: ${character.type === 'anime' ? 'アニメ調、鮮やかな色彩、細部まで描き込まれた' : '写実的、詳細、高解像度、映画のような品質'}
+スタイル: ${character.type === "anime" ? "アニメ調、鮮やかな色彩、細部まで描き込まれた" : "写実的、詳細、高解像度、映画のような品質"}
 
 画像生成用の詳細なプロンプトのみを返してください。`;
-  
+
   // xAI APIリクエスト
   const response = await xaiClient.createChatCompletion(
     [{ role: "user", content: enhancedPrompt } as ChatCompletionMessageParam],
@@ -201,9 +199,9 @@ ${character.description}
     {
       temperature: 0.7,
       max_tokens: 500,
-    }
+    },
   );
-  
+
   return response.content;
 }
 
@@ -211,14 +209,14 @@ ${character.description}
 export async function generateContent(
   prompt: string,
   model = defaultModel,
-  options: XAIChatCompletionOptions = {}
+  options: XAIChatCompletionOptions = {},
 ) {
   // xAI APIリクエスト
   const response = await xaiClient.createChatCompletion(
     [{ role: "user", content: prompt } as ChatCompletionMessageParam],
     model,
-    options
+    options,
   );
-  
+
   return response.content;
 }

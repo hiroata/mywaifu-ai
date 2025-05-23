@@ -7,8 +7,8 @@ export interface Character {
   description: string;
   shortDescription?: string | null;
   age?: number | null;
-  gender: 'male' | 'female' | 'other';
-  type: 'real' | 'anime';
+  gender: "male" | "female" | "other";
+  type: "real" | "anime";
   personality: string;
   profileImageUrl: string;
   createdAt: Date;
@@ -41,8 +41,8 @@ export type CharacterFormData = {
   description: string;
   shortDescription?: string;
   age?: number;
-  gender: 'male' | 'female' | 'other';
-  type: 'real' | 'anime';
+  gender: "male" | "female" | "other";
+  type: "real" | "anime";
   personality: string;
   profileImage?: File;
   tags: string[];

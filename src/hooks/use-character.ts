@@ -2,14 +2,23 @@
 import { useCallback } from "react";
 import { useCharacterStore } from "@/store/character-store";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Character, CustomCharacter, CharacterFormData } from "@/types/character";
+import {
+  Character,
+  CustomCharacter,
+  CharacterFormData,
+} from "@/types/character";
 
 export function useCharacters() {
-  const { characters, setCharacters, isLoading, setLoading } = useCharacterStore();
+  const { characters, setCharacters, isLoading, setLoading } =
+    useCharacterStore();
   const queryClient = useQueryClient();
 
   // キャラクター一覧取得
-  const { data, isLoading: isQueryLoading, refetch } = useQuery({
+  const {
+    data,
+    isLoading: isQueryLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["characters"],
     queryFn: async () => {
       setLoading(true);
@@ -47,7 +56,11 @@ export function useCustomCharacters() {
   const queryClient = useQueryClient();
 
   // カスタムキャラクター一覧取得
-  const { data, isLoading: isQueryLoading, refetch } = useQuery({
+  const {
+    data,
+    isLoading: isQueryLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["customCharacters"],
     queryFn: async () => {
       setLoading(true);
@@ -69,34 +82,34 @@ export function useCustomCharacters() {
   const createMutation = useMutation({
     mutationFn: async (formData: CharacterFormData) => {
       const form = new FormData();
-      
+
       // テキストフィールドをFormDataに追加
       Object.entries(formData).forEach(([key, value]) => {
         if (key !== "profileImage" && key !== "tags" && value !== undefined) {
           form.append(key, String(value));
         }
       });
-      
+
       // 画像ファイルを追加
       if (formData.profileImage) {
         form.append("profileImage", formData.profileImage);
       }
-      
+
       // タグを追加
       if (formData.tags && formData.tags.length > 0) {
         form.append("tags", JSON.stringify(formData.tags));
       }
-      
+
       const response = await fetch("/api/custom-characters", {
         method: "POST",
         body: form,
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || "キャラクター作成に失敗しました");
       }
-      
+
       return response.json();
     },
     onSuccess: (data) => {
@@ -107,36 +120,42 @@ export function useCustomCharacters() {
 
   // カスタムキャラクター更新ミューテーション
   const updateMutation = useMutation({
-    mutationFn: async ({ id, formData }: { id: string; formData: CharacterFormData }) => {
+    mutationFn: async ({
+      id,
+      formData,
+    }: {
+      id: string;
+      formData: CharacterFormData;
+    }) => {
       const form = new FormData();
-      
+
       // テキストフィールドをFormDataに追加
       Object.entries(formData).forEach(([key, value]) => {
         if (key !== "profileImage" && key !== "tags" && value !== undefined) {
           form.append(key, String(value));
         }
       });
-      
+
       // 画像ファイルを追加
       if (formData.profileImage) {
         form.append("profileImage", formData.profileImage);
       }
-      
+
       // タグを追加
       if (formData.tags && formData.tags.length > 0) {
         form.append("tags", JSON.stringify(formData.tags));
       }
-      
+
       const response = await fetch(`/api/custom-characters/${id}`, {
         method: "PUT",
         body: form,
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || "キャラクター更新に失敗しました");
       }
-      
+
       return response.json();
     },
     onSuccess: (data, variables) => {
@@ -151,12 +170,12 @@ export function useCustomCharacters() {
       const response = await fetch(`/api/custom-characters/${id}`, {
         method: "DELETE",
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || "キャラクター削除に失敗しました");
       }
-      
+
       return response.json();
     },
     onSuccess: (_, id) => {

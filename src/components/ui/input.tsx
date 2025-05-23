@@ -1,6 +1,6 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "@/lib/utils";
 
 const inputVariants = cva(
   "flex w-full rounded-lg border bg-transparent px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-neutral-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-800 dark:ring-offset-neutral-950 dark:placeholder:text-neutral-400 dark:focus-visible:ring-neutral-300 transition-all duration-200",
@@ -21,8 +21,8 @@ const inputVariants = cva(
       variant: "default",
       size: "default",
     },
-  }
-)
+  },
+);
 
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement>,
@@ -37,9 +37,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         ref={ref}
         {...props}
       />
-    )
-  }
-)
-Input.displayName = "Input"
+    );
+  },
+);
+Input.displayName = "Input";
 
-export { Input }
+export { Input };

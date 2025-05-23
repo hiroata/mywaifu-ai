@@ -22,6 +22,7 @@ GitHubリポジトリの「Settings」→「Secrets and variables」→「Action
 ロリポップのFTP接続でエラーが発生する場合、以下の設定パターンを試してみてください：
 
 ### パターン1: アカウントIDをユーザー名として使用
+
 ```yaml
 - name: Deploy via FTP
   uses: SamKirkland/FTP-Deploy-Action@v4.3.4
@@ -34,6 +35,7 @@ GitHubリポジトリの「Settings」→「Secrets and variables」→「Action
 ```
 
 ### パターン2: ドメイン識別子をユーザー名として使用
+
 ```yaml
 - name: Deploy via FTP
   uses: SamKirkland/FTP-Deploy-Action@v4.3.4
@@ -46,6 +48,7 @@ GitHubリポジトリの「Settings」→「Secrets and variables」→「Action
 ```
 
 ### パターン3: メールアドレスをユーザー名として使用
+
 ```yaml
 - name: Deploy via FTP
   uses: SamKirkland/FTP-Deploy-Action@v4.3.4
@@ -77,6 +80,7 @@ https://shakedude.com/api/auth/callback/google
    npx prisma migrate deploy
    ```
 3. カスタムドメイン(shakedude.com)の設定：
+
    - ロリポップの管理画面から「ドメイン/SSL」→「独自ドメイン設定」を開く
    - shakedude.comをロリポップアカウントに紐付ける
    - DNSレコードを設定（ドメイン管理会社のコントロールパネルで設定）

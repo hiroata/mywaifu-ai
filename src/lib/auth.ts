@@ -1,11 +1,11 @@
 // src/lib/auth.ts
-import NextAuth from 'next-auth';
-import { PrismaAdapter } from '@auth/prisma-adapter';
-import { db } from '@/lib/db';
-import Credentials from 'next-auth/providers/credentials';
-import Google from 'next-auth/providers/google';
-import Twitter from 'next-auth/providers/twitter';
-import bcrypt from 'bcryptjs';
+import NextAuth from "next-auth";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import { db } from "@/lib/db";
+import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
+import Twitter from "next-auth/providers/twitter";
+import bcrypt from "bcryptjs";
 
 export const {
   handlers: { GET, POST },
@@ -25,10 +25,10 @@ export const {
       version: "2.0",
     }),
     Credentials({
-      name: 'Credentials',
+      name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -47,7 +47,7 @@ export const {
 
         const passwordMatch = await bcrypt.compare(
           credentials.password,
-          user.hashedPassword
+          user.hashedPassword,
         );
 
         if (!passwordMatch) {
@@ -55,8 +55,8 @@ export const {
         }
 
         return user;
-      }
-    })
+      },
+    }),
   ],
   callbacks: {
     async session({ session, token }) {
@@ -78,8 +78,9 @@ export const {
       }
 
       return token;
-    }
-  },  session: {
+    },
+  },
+  session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30日間
   },
