@@ -2,9 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { writeFile } from "fs/promises";
-import path from "path";
-import crypto from "crypto";
+import { saveFile } from "@/lib/utils/index";
+import { validateMediaFile } from "@/lib/utils/validation";
 
 // コンテンツのバリデーションスキーマ
 const contentSchema = z.object({
@@ -87,7 +86,6 @@ export async function POST(request: NextRequest) {
 
     if (contentType === "image" || contentType === "video") {
       const contentFile = formData.get("contentFile") as File;
-
       if (!contentFile || contentFile.size === 0) {
         return NextResponse.json(
           {
@@ -97,38 +95,19 @@ export async function POST(request: NextRequest) {
           { status: 400 },
         );
       }
-
-      // ファイルサイズの制限チェック
-      const maxSize =
-        contentType === "image" ? 10 * 1024 * 1024 : 100 * 1024 * 1024; // 画像: 10MB, 動画: 100MB
-      if (contentFile.size > maxSize) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: `ファイルサイズが大きすぎます。${contentType === "image" ? "画像は10MB" : "動画は100MB"}以下にしてください`,
-          },
-          { status: 400 },
-        );
+      // 共通バリデーション
+      const errorMsg = validateMediaFile(contentFile, contentType);
+      if (errorMsg) {
+        return NextResponse.json({ success: false, error: errorMsg }, { status: 400 });
       }
-
-      // ファイル名をランダムに生成して保存
+      // ファイル保存
       const fileExt = contentFile.name.split(".").pop();
-      const fileName = `${crypto.randomUUID()}.${fileExt}`;
       const contentDir = contentType === "image" ? "images" : "videos";
-      const filePath = path.join(
-        process.cwd(),
-        "public",
-        "uploads",
-        contentDir,
-        fileName,
-      );
-
-      // ファイルを保存
       const buffer = Buffer.from(await contentFile.arrayBuffer());
-      await writeFile(filePath, buffer);
-
-      // コンテンツURLを設定
-      contentUrl = `/uploads/${contentDir}/${fileName}`;
+      contentUrl = await saveFile(buffer, {
+        folder: contentDir,
+        extension: fileExt,
+      });
     }
 
     // バリデーション

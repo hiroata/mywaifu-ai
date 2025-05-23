@@ -31,43 +31,31 @@ export const usernameSchema = z
       "ユーザー名には英数字、アンダースコア(_)、ハイフン(-)のみ使用できます",
   });
 
-// 画像ファイルのバリデーション関数
-export function validateImageFile(
+// 画像・動画ファイルのバリデーション関数（共通化）
+export function validateMediaFile(
   file: File | null | undefined,
+  type: "image" | "video",
 ): string | null {
   if (!file) return null;
-
-  // ファイル形式の確認
-  const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-  if (!allowedTypes.includes(file.type)) {
-    return "JPEG, PNG, GIF, WebP形式の画像ファイルをアップロードしてください";
+  if (type === "image") {
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      return "JPEG, PNG, GIF, WebP形式の画像ファイルをアップロードしてください";
+    }
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      return "画像サイズは5MB以下である必要があります";
+    }
+  } else if (type === "video") {
+    const allowedTypes = ["video/mp4", "video/webm", "video/ogg"];
+    if (!allowedTypes.includes(file.type)) {
+      return "MP4, WebM, OGG形式の動画ファイルをアップロードしてください";
+    }
+    const maxSize = 100 * 1024 * 1024;
+    if (file.size > maxSize) {
+      return "動画サイズは100MB以下である必要があります";
+    }
   }
-
-  // ファイルサイズの確認（5MB以下）
-  const maxSize = 5 * 1024 * 1024;
-  if (file.size > maxSize) {
-    return "画像サイズは5MB以下である必要があります";
-  }
-
-  return null;
-}
-
-// 動画ファイルのバリデーション関数
-export function validateVideoFile(
-  file: File | null | undefined,
-): string | null {
-  if (!file) return null;
-
-  const allowedTypes = ["video/mp4", "video/webm", "video/ogg"];
-  if (!allowedTypes.includes(file.type)) {
-    return "MP4, WebM, OGG形式の動画ファイルをアップロードしてください";
-  }
-
-  const maxSize = 100 * 1024 * 1024; // 100MB
-  if (file.size > maxSize) {
-    return "動画サイズは100MB以下である必要があります";
-  }
-
   return null;
 }
 
@@ -147,3 +135,5 @@ export function validateData<T>(
     return { success: false, error: "バリデーションエラーが発生しました" };
   }
 }
+
+// validateImageFile, validateVideoFileはvalidateMediaFileで代替

@@ -141,15 +141,39 @@ export const safeLocalStorage = {
   },
 };
 
-// ファイル操作用の共通ユーティリティ
+// --- SaveFileOptions型（file-utils.tsより移植） ---
+export interface SaveFileOptions {
+  folder: string;
+  extension?: string;
+  baseDir?: string;
+  fileName?: string;
+}
+
+// --- saveFile（file-utils.tsのオプション形式もサポート） ---
 export async function saveFile(
   buffer: Buffer,
-  folder: string,
-  extension: string = "bin",
-  baseDir: string = "./public/uploads",
+  folderOrOptions: string | SaveFileOptions,
+  extension?: string,
+  baseDir?: string,
 ): Promise<string> {
-  const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${extension}`;
-  const dirPath = path.join(baseDir, folder);
+  let folder: string;
+  let ext = "bin";
+  let base = "./public/uploads";
+  let fileName: string;
+
+  if (typeof folderOrOptions === "string") {
+    folder = folderOrOptions;
+    if (extension) ext = extension;
+    if (baseDir) base = baseDir;
+    fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${ext}`;
+  } else {
+    folder = folderOrOptions.folder;
+    ext = folderOrOptions.extension || "bin";
+    base = folderOrOptions.baseDir || "./public/uploads";
+    fileName = folderOrOptions.fileName || `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${ext}`;
+  }
+
+  const dirPath = path.join(base, folder);
   const filePath = path.join(dirPath, fileName);
 
   if (!fs.existsSync(dirPath)) {
@@ -160,6 +184,7 @@ export async function saveFile(
   return `/uploads/${folder}/${fileName}`;
 }
 
+// --- base64ToBuffer（file-utils.tsより移植） ---
 export function base64ToBuffer(base64String: string): Buffer {
   const base64Data = base64String.replace(/^data:image\/\w+;base64,/, "");
   return Buffer.from(base64Data, "base64");
