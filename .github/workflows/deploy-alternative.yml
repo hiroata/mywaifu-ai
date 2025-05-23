@@ -52,11 +52,12 @@ jobs:
         cp package-lock.json deploy/
         cp next.config.js deploy/
         cp .env deploy/.env
-            - name: Deploy to Shakedude.com via FTP
+          
+    - name: Deploy to Shakedude.com via FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
         server: std014.lolipop.jp
-        username: clan.commerce
+        username: LAA0978814
         password: ${{ secrets.FTP_PASSWORD }}
         protocol: ftp
         port: 21

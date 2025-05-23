@@ -17,6 +17,48 @@ GitHubリポジトリの「Settings」→「Secrets and variables」→「Action
 - `XAI_API_KEY`: xAI (Grok) のAPIキー
 - `GEMINI_API_KEY`: Google Gemini のAPIキー
 
+## 1-1. FTP接続設定のトラブルシューティング
+
+ロリポップのFTP接続でエラーが発生する場合、以下の設定パターンを試してみてください：
+
+### パターン1: アカウントIDをユーザー名として使用
+```yaml
+- name: Deploy via FTP
+  uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+  with:
+    server: std014.lolipop.jp
+    username: LAA0978814
+    password: ${{ secrets.FTP_PASSWORD }}
+    protocol: ftp
+    port: 21
+```
+
+### パターン2: ドメイン識別子をユーザー名として使用
+```yaml
+- name: Deploy via FTP
+  uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+  with:
+    server: 3385b51a75b81a95.main.jp
+    username: 3385b51a75b81a95
+    password: ${{ secrets.FTP_PASSWORD }}
+    protocol: ftp
+    port: 21
+```
+
+### パターン3: メールアドレスをユーザー名として使用
+```yaml
+- name: Deploy via FTP
+  uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+  with:
+    server: std014.lolipop.jp
+    username: clan.commerce
+    password: ${{ secrets.FTP_PASSWORD }}
+    protocol: ftp
+    port: 21
+```
+
+正確なFTP接続情報はロリポップのサポートに問い合わせることをお勧めします。
+
 ## 2. Googleの認証設定を更新
 
 Google Cloud ConsoleでOAuthアプリケーションの設定を開き、以下の承認済みリダイレクトURIを追加してください：
