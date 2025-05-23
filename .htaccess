@@ -1,0 +1,18 @@
+# ルートディレクトリの.htaccessファイル
+# すべてのリクエストをpublicディレクトリへ転送
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  
+  # ファイルが存在する場合はそのまま表示
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+  
+  # それ以外はすべてindex.html/index.phpにリダイレクト
+  RewriteCond %{REQUEST_URI} !^/public/
+  RewriteRule (.*) /public/$1 [L]
+</IfModule>
+
+# デフォルトインデックスファイル
+DirectoryIndex index.html index.php

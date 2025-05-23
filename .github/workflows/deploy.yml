@@ -54,17 +54,7 @@ jobs:
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
-      # 必要なファイルだけをデプロイディレクトリにコピーする
-      - name: Prepare deployment files
-        run: |
-          mkdir -p deploy
-          cp -r .next deploy/
-          cp -r public deploy/
-          cp package.json deploy/
-          cp package-lock.json deploy/
-          cp next.config.js deploy/
-          cp .env deploy/.env
-
+      # 必要なファイルをそのまま転送（/deploy/サブディレクトリなし）
       - name: Deploy files to Shakedude.com (SSH+SFTP)
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -72,6 +62,25 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ secrets.SSH_PORT }}
-          source: "deploy/**"
+          source: ".next/,public/,package.json,package-lock.json,next.config.js,.env,server.js,ecosystem.config.js,.htaccess"
           target: "${{ secrets.SSH_DEPLOY_PATH }}"
           rm: true # 既存ファイルを削除してから転送
+          
+      # サーバー上でPM2を使用してアプリケーションを再起動
+      - name: Restart application on server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd ${{ secrets.SSH_DEPLOY_PATH }}
+            # PM2がインストールされていなければインストール
+            if ! command -v pm2 &> /dev/null; then
+              npm install -g pm2
+            fi
+            # 依存関係をインストール
+            npm ci --production
+            # アプリケーションを再起動
+            pm2 reload ecosystem.config.js || pm2 start ecosystem.config.js
