@@ -55,6 +55,15 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
       # 必要なファイルをそのまま転送（/deploy/サブディレクトリなし）
+      - name: List files before deployment
+        run: |
+          echo "Listing .next directory:"
+          ls -la .next || echo ".next directory not found"
+          echo "Listing public directory:"
+          ls -la public || echo "public directory not found"
+          echo "Listing root files:"
+          ls -la *.js *.json .htaccess .env start-server.sh LOLIPOP-NODEJS.md || echo "Some files not found"
+
       - name: Deploy files to Shakedude.com (SSH+SFTP)
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -62,9 +71,12 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ secrets.SSH_PORT }}
-          source: ".next/,public/,package.json,package-lock.json,next.config.js,.env,server.js,ecosystem.config.js,.htaccess,start-server.sh,LOLIPOP-NODEJS.md"
+          source: ".next/**,.next,.env,server.js,ecosystem.config.js,.htaccess,start-server.sh,LOLIPOP-NODEJS.md,package.json,package-lock.json,next.config.js,public/**,public"
           target: "${{ secrets.SSH_DEPLOY_PATH }}"
           rm: true # 既存ファイルを削除してから転送
+          strip_components: 0
+          overwrite: true
+          debug: true
           
       # サーバー上でPM2を使用してアプリケーションを再起動
       - name: Restart application on server
@@ -95,3 +107,24 @@ jobs:
             ./start-server.sh || bash start-server.sh
             
             echo "Server start attempt completed"
+
+      # フォールバック: SSHを使用して直接ファイルを転送する方法も追加
+      - name: Alternative file transfer via SSH (if SCP fails)
+        if: failure() # 前のステップが失敗した場合に実行
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            # 一時ディレクトリをクリーンアップ
+            mkdir -p ${{ secrets.SSH_DEPLOY_PATH }}_tmp
+            
+            # 削除前に対象ディレクトリが存在するか確認
+            if [ -d "${{ secrets.SSH_DEPLOY_PATH }}" ]; then
+              echo "Target directory exists, preparing for update"
+            else
+              echo "Creating target directory"
+              mkdir -p ${{ secrets.SSH_DEPLOY_PATH }}
+            fi
