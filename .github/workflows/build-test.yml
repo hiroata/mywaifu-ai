@@ -1,0 +1,63 @@
+name: Build Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:  # 手動実行のトリガーを追加
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Create .env file for testing
+      run: |
+        echo "# テスト用の環境変数設定" > .env
+        echo "NEXTAUTH_SECRET=test_secret" >> .env
+        echo "NEXTAUTH_URL=http://localhost:3000" >> .env
+        echo "DATABASE_URL=file:./test.db" >> .env
+        echo "GOOGLE_CLIENT_ID=test_client_id" >> .env
+        echo "GOOGLE_CLIENT_SECRET=test_client_secret" >> .env
+        echo "XAI_API_KEY=test_xai_key" >> .env
+        echo "GEMINI_API_KEY=test_gemini_key" >> .env
+      
+    - name: Run Prisma generate
+      run: npx prisma generate
+      
+    - name: Lint
+      run: npm run lint
+      
+    - name: Build project
+      run: npm run build
+      env:
+        # テスト用環境変数を設定
+        NEXTAUTH_SECRET: test_secret
+        NEXTAUTH_URL: http://localhost:3000
+        DATABASE_URL: file:./test.db
+        GOOGLE_CLIENT_ID: test_client_id
+        GOOGLE_CLIENT_SECRET: test_client_secret
+        XAI_API_KEY: test_xai_key
+        GEMINI_API_KEY: test_gemini_key
+        
+    - name: Verify build output
+      run: |
+        if [ -d ".next" ]; then
+          echo "Build successful! .next directory exists."
+        else
+          echo "Build failed. .next directory does not exist."
+          exit 1
+        fi
