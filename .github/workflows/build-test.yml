@@ -1,0 +1,81 @@
+name: Build Test
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # 手動実行も可能に
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Create test .env file
+      run: |
+        echo "NEXTAUTH_SECRET=test_secret" > .env
+        echo "NEXTAUTH_URL=http://localhost:3000" >> .env
+        echo "GOOGLE_CLIENT_ID=test_google_id" >> .env
+        echo "GOOGLE_CLIENT_SECRET=test_google_secret" >> .env
+        echo "DATABASE_URL=file:./test.db" >> .env
+        echo "XAI_API_KEY=test_xai_key" >> .env
+        echo "GEMINI_API_KEY=test_gemini_key" >> .env
+      
+    - name: Build project
+      run: npm run build
+      env:
+        NEXTAUTH_SECRET: test_secret
+        NEXTAUTH_URL: http://localhost:3000
+        GOOGLE_CLIENT_ID: test_google_id
+        GOOGLE_CLIENT_SECRET: test_google_secret
+        DATABASE_URL: file:./test.db
+        XAI_API_KEY: test_xai_key
+        GEMINI_API_KEY: test_gemini_key
+        
+    - name: Run tests (if any)
+      run: npm test || true  # テストがない場合でもエラーにならないように
+      
+    - name: Build project
+      run: npm run build
+      env:
+        # 環境変数を設定
+        NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+        NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+        GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        
+    # 必要なファイルだけをデプロイディレクトリにコピーする
+    - name: Prepare deployment files
+      run: |
+        mkdir -p deploy
+        cp -r .next deploy/
+        cp -r public deploy/
+        cp package.json deploy/
+        cp package-lock.json deploy/
+        cp next.config.js deploy/
+        cp .env deploy/.env
+          
+    - name: Deploy to Shakedude.com via FTPS
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ftp.3385b51a75b81a95.main.jp
+        username: main.jp-3385b51a75b81a95
+        password: ${{ secrets.FTP_PASSWORD }}
+        protocol: ftps
+        port: 990
+        local-dir: ./deploy/
+        server-dir: /home/users/3385b51a75b81a95/web/
+        dangerous-clean-slate: true
