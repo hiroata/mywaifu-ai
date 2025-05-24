@@ -69,6 +69,14 @@ jobs:
           echo "Build output size:"
           du -sh .next/ || echo "Could not check .next size"
 
+      # FTP接続テスト
+      - name: Test FTP Connection
+        run: |
+          echo "Testing FTP connection..."
+          echo "Host: ${{ secrets.FTP_HOST }}"
+          echo "Username: ${{ secrets.FTP_USERNAME }}"
+          echo "Remote root: ${{ secrets.FTP_REMOTE_ROOT }}"
+          
       # FTPでファイル転送
       - name: Deploy to Lolipop via FTP
         id: ftp-deploy
@@ -80,6 +88,7 @@ jobs:
           local-dir: ./
           server-dir: ${{ secrets.FTP_REMOTE_ROOT }}/
           dangerous-clean-slate: true
+          log-level: verbose
           exclude: |
             **/.git*/**
             **/node_modules/**

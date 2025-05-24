@@ -1,0 +1,60 @@
+name: Deploy to Lolipop via FTP (Alternative)
+
+on:
+  workflow_dispatch: # 手動実行のみ
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create .env file from secrets
+        run: |
+          echo "NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}" > .env
+          echo "NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }}" >> .env
+          echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
+          echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
+          echo "XAI_API_KEY=${{ secrets.XAI_API_KEY }}" >> .env
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
+
+      - name: Build project
+        run: npm run build
+        env:
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+      # 代替FTPデプロイ方法（curlを使用）
+      - name: Deploy via FTP using curl
+        run: |
+          echo "Uploading files via FTP using curl..."
+          find .next -type f -name "*.js" -o -name "*.css" -o -name "*.html" | head -5 | while read file; do
+            echo "Uploading: $file"
+            curl -T "$file" ftp://${{ secrets.FTP_HOST }}${{ secrets.FTP_REMOTE_ROOT }}/${file#./} --user ${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }} || echo "Failed to upload $file"
+          done
+          
+      # 別のFTPアクションを試す
+      - name: Deploy via alternative FTP action
+        uses: sebastianpopp/ftp-action@releases/v2
+        with:
+          host: ${{ secrets.FTP_HOST }}
+          user: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          localDir: ".next"
+          remoteDir: ${{ secrets.FTP_REMOTE_ROOT }}/.next
