@@ -1,0 +1,47 @@
+name: FTP Connection Test
+
+on:
+  workflow_dispatch: # 手動実行のみ
+
+jobs:
+  ftp-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test FTP Connection
+        run: |
+          echo "Testing FTP connection to: ${{ secrets.FTP_HOST }}"
+          echo "Username: ${{ secrets.FTP_USERNAME }}"
+          echo "Remote directory: ${{ secrets.FTP_REMOTE_ROOT }}"
+          
+          # FTPクライアントをインストール
+          sudo apt-get update
+          sudo apt-get install -y ftp lftp
+          
+          # FTPコマンドで接続をテスト
+          echo "Testing with standard FTP client..."
+          timeout 30 ftp -n ${{ secrets.FTP_HOST }} << EOF || echo "FTP connection failed"
+          user ${{ secrets.FTP_USERNAME }} ${{ secrets.FTP_PASSWORD }}
+          pwd
+          ls
+          quit
+          EOF
+          
+          echo "Testing with lftp client..."
+          timeout 30 lftp -c "
+          set ftp:ssl-allow false;
+          set ftp:passive-mode true;
+          open ftp://${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}@${{ secrets.FTP_HOST }};
+          pwd;
+          ls;
+          quit
+          " || echo "LFTP connection failed"
+          
+      - name: Test FTP Deploy Action
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.0
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: ${{ secrets.FTP_REMOTE_ROOT }}
+          local-dir: ./
+          dry-run: true # 実際のファイル転送は行わない

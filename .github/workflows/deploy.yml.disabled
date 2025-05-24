@@ -1,0 +1,130 @@
+# これは唯一の公式デプロイワークフローファイルです
+# 複数のデプロイを防ぐために、他のデプロイワークフローファイルはすべて削除されています
+# このワークフローは、メインブランチへのプッシュ時に自動的に実行されます
+
+name: Deploy to Lolipop via FTP
+
+on:
+  push:
+    branches: [main] # mainブランチにプッシュされたときに実行
+    paths-ignore:
+      - "README.md"
+      - "DEPLOY.md" 
+      - "DEPLOY-NEW.md"
+      - "docs/**"
+  workflow_dispatch: # 手動実行できるようにする
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true # 新しいコミットが来たら実行中のワークフローをキャンセル
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create .env file from secrets
+        run: |
+          echo "NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}" > .env
+          echo "NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }}" >> .env
+          echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
+          echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
+          echo "XAI_API_KEY=${{ secrets.XAI_API_KEY }}" >> .env
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
+
+      - name: Build project
+        run: npm run build
+        env:
+          # 環境変数を設定
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+      # FTPでデプロイする前にファイル一覧を確認
+      - name: List files before deployment
+        run: |
+          echo "Listing .next directory:"
+          ls -la .next || echo ".next directory not found"
+          echo "Listing .next/server directory:"
+          ls -la .next/server || echo ".next/server directory not found"
+          echo "Listing public directory:"
+          ls -la public || echo "public directory not found"
+          echo "Listing root files:"
+          ls -la *.js *.json .htaccess .env start-server.sh || echo "Some files not found"
+          echo "Build output size:"
+          du -sh .next/ || echo "Could not check .next size"
+
+      # FTP接続情報をデバッグ（パスワードは除外）
+      # Lolipop FTP設定の注意点:
+      # - Host: ftp.lolipop.jp または [アカウント名].lolipop.jp
+      # - Username: [アカウント名] または [アカウント名]-[ドメイン名]
+      # - Remote Root: / または /web/ または /public_html/
+      - name: Debug FTP connection info
+        run: |
+          echo "FTP Host: ${{ secrets.FTP_HOST }}"
+          echo "FTP Username: ${{ secrets.FTP_USERNAME }}"
+          echo "FTP Remote Root: ${{ secrets.FTP_REMOTE_ROOT }}"
+          echo "Username length: ${#FTP_USERNAME}"
+          echo "Password length: ${#FTP_PASSWORD}"
+        env:
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+
+      # FTPでファイル転送
+      - name: Deploy to Lolipop via FTP
+        id: ftp-deploy
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.0
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: ${{ secrets.FTP_REMOTE_ROOT }}
+          local-dir: ./
+          dangerous-clean-slate: true
+          exclude: |
+            **/.git*/**
+            **/node_modules/**
+            **/.github/**
+            **/backup/**
+            **/docs/**
+            **/scripts/**
+            **/prisma/**
+            **/test-config.*
+            **/README.md
+            **/DEPLOY*.md
+            
+      # 上記のFTPデプロイが失敗した場合の代替手段
+      - name: Alternative FTP Deploy (if main deploy fails)
+        if: failure()
+        uses: sebastianpopp/ftp-action@releases/v2
+        with:
+          host: ${{ secrets.FTP_HOST }}
+          user: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          localDir: "./"
+          remoteDir: ${{ secrets.FTP_REMOTE_ROOT }}/
+            
+      - name: Deployment status
+        run: |
+          if [ "${{ steps.ftp-deploy.outcome }}" == "success" ]; then
+            echo "✅ FTP deployment successful"
+            echo "Deployment completed at $(date)"
+          else
+            echo "❌ FTP deployment failed"
+            echo "Error details may be in the log above"
+          fi

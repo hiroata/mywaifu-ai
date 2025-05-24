@@ -1,25 +1,21 @@
-# これは唯一の公式デプロイワークフローファイルです
-# 複数のデプロイを防ぐために、他のデプロイワークフローファイルはすべて削除されています
-# このワークフローは、メインブランチへのプッシュ時に自動的に実行されます
-
-name: Deploy to Lolipop via FTP
+name: Deploy to Lolipop
 
 on:
   push:
-    branches: [main] # mainブランチにプッシュされたときに実行
-    paths-ignore:
-      - "README.md"
-      - "DEPLOY.md" 
-      - "DEPLOY-NEW.md"
-      - "docs/**"
-  workflow_dispatch: # 手動実行できるようにする
+    branches:
+      - master   
+      - main  # mainブランチも追加
+  workflow_dispatch: # 手動実行も可能
+
+# GitHub Pagesのデプロイを無効にする設定
+env:
+  PAGES_DEPLOYMENT_DISABLED: true
 
 jobs:
-  build-and-deploy:
+  optimize-and-deploy:
+    name: Optimize and FTP Deploy
     runs-on: ubuntu-latest
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
-      cancel-in-progress: true # 新しいコミットが来たら実行中のワークフローをキャンセル
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -46,7 +42,6 @@ jobs:
       - name: Build project
         run: npm run build
         env:
-          # 環境変数を設定
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
           NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
@@ -55,7 +50,6 @@ jobs:
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
-      # FTPでデプロイする前にファイル一覧を確認
       - name: List files before deployment
         run: |
           echo "Listing .next directory:"
@@ -69,26 +63,14 @@ jobs:
           echo "Build output size:"
           du -sh .next/ || echo "Could not check .next size"
 
-      # FTP接続テスト
-      - name: Test FTP Connection
-        run: |
-          echo "Testing FTP connection..."
-          echo "Host: ${{ secrets.FTP_HOST }}"
-          echo "Username: ${{ secrets.FTP_USERNAME }}"
-          echo "Remote root: ${{ secrets.FTP_REMOTE_ROOT }}"
-          
-      # FTPでファイル転送
-      - name: Deploy to Lolipop via FTP
-        id: ftp-deploy
-        uses: SamKirkland/FTP-Deploy-Action@4.0.0
+      - name: FTP Deploy
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.0  
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: ${{ secrets.FTP_REMOTE_ROOT }}
           local-dir: ./
-          server-dir: ${{ secrets.FTP_REMOTE_ROOT }}/
-          dangerous-clean-slate: true
-          log-level: verbose
           exclude: |
             **/.git*/**
             **/node_modules/**
@@ -100,13 +82,3 @@ jobs:
             **/test-config.*
             **/README.md
             **/DEPLOY*.md
-            
-      - name: Deployment status
-        run: |
-          if [ "${{ steps.ftp-deploy.outcome }}" == "success" ]; then
-            echo "✅ FTP deployment successful"
-            echo "Deployment completed at $(date)"
-          else
-            echo "❌ FTP deployment failed"
-            echo "Error details may be in the log above"
-          fi
