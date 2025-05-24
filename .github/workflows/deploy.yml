@@ -8,9 +8,9 @@ on:
   push:
     branches: [main] # mainブランチにプッシュされたときに実行
     paths-ignore:
-      - ".github/workflows/**" # ワークフロー自体の変更ではデプロイしない
       - "README.md"
-      - "DEPLOY.md"
+      - "DEPLOY.md" 
+      - "DEPLOY-NEW.md"
       - "docs/**"
   workflow_dispatch: # 手動実行できるようにする
 
