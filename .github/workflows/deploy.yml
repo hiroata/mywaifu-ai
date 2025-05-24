@@ -12,6 +12,7 @@ on:
       - "README.md"
       - "DEPLOY.md"
       - "docs/**"
+  workflow_dispatch: # 手動実行できるようにする
 
 jobs:
   build-and-deploy:
@@ -59,13 +60,18 @@ jobs:
         run: |
           echo "Listing .next directory:"
           ls -la .next || echo ".next directory not found"
+          echo "Listing .next/server directory:"
+          ls -la .next/server || echo ".next/server directory not found"
           echo "Listing public directory:"
           ls -la public || echo "public directory not found"
           echo "Listing root files:"
           ls -la *.js *.json .htaccess .env start-server.sh || echo "Some files not found"
+          echo "Build output size:"
+          du -sh .next/ || echo "Could not check .next size"
 
       # FTPでファイル転送
       - name: Deploy to Lolipop via FTP
+        id: ftp-deploy
         uses: SamKirkland/FTP-Deploy-Action@4.0.0
         with:
           server: ${{ secrets.FTP_HOST }}
@@ -85,3 +91,13 @@ jobs:
             **/test-config.*
             **/README.md
             **/DEPLOY*.md
+            
+      - name: Deployment status
+        run: |
+          if [ "${{ steps.ftp-deploy.outcome }}" == "success" ]; then
+            echo "✅ FTP deployment successful"
+            echo "Deployment completed at $(date)"
+          else
+            echo "❌ FTP deployment failed"
+            echo "Error details may be in the log above"
+          fi
