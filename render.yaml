@@ -1,0 +1,48 @@
+version: 2
+
+services:
+  - type: web
+    name: mywaifu-ai
+    env: node
+    runtime: node
+    plan: starter
+    region: oregon
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: node server-websocket.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mywaifu-ai-db
+          property: connectionString
+      - key: NEXTAUTH_SECRET
+        generateValue: true
+      - key: NEXTAUTH_URL
+        value: https://mywaifu-ai.onrender.com
+      - key: RENDER_EXTERNAL_URL
+        value: https://mywaifu-ai.onrender.com
+      - key: NEXT_PUBLIC_SOCKET_URL
+        value: https://mywaifu-ai.onrender.com
+    scaling:
+      minInstances: 1
+      maxInstances: 3
+    disk:
+      name: mywaifu-ai-disk
+      sizeGB: 5
+      mountPath: /app/data
+      
+databases:
+  - name: mywaifu-ai-db
+    databaseName: mywaifu_ai
+    user: mywaifu_ai_user
+    plan: free
+    region: oregon
+
+# Auto-deployは無効化（GitHub Actionsで制御）
+autoDeploy: false
+
+# GitHub連携設定
+repo: https://github.com/hiroata/mywaifu-ai
+branch: main
