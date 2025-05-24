@@ -1,103 +1,56 @@
 <?php
-// このスクリプトは、ロリポップサーバーでNode.jsプロセスを起動・停止するためのものです
+// サーバー管理機能
+// 各種コマンド定義
+$commands = [
+    'status' => 'pm2 status',
+    'start' => 'pm2 start ecosystem.config.js',
+    'restart' => 'pm2 restart ecosystem.config.js',
+    'stop' => 'pm2 stop ecosystem.config.js', 
+    'logs' => 'pm2 logs --lines 50',
+    'reload' => 'pm2 reload ecosystem.config.js'
+];
 
-// サーバーのステータスをチェック
-$pid_file = 'server.pid';
-$is_running = false;
-$current_pid = '';
-
-if (file_exists($pid_file)) {
-    $current_pid = trim(file_get_contents($pid_file));
-    // Linuxでプロセスが実行中かチェック
-    exec("ps -p $current_pid", $output, $return_val);
-    $is_running = ($return_val === 0);
-}
-
-// アクションの判定 (起動・停止・再起動)
-$action = isset($_GET['action']) ? $_GET['action'] : '';
-
-// メッセージを保存する変数
+// アクションの判定
+$action = isset($_GET['action']) ? $_GET['action'] : 'status';
 $message = '';
+$output = '';
 
-switch ($action) {
-    case 'start':
-        if ($is_running) {
-            $message = "サーバーは既に実行中です (PID: $current_pid)";
-        } else {
-            // サーバーを起動
-            exec("bash start-server.sh > /dev/null 2>&1 &", $output, $return_val);
-            $message = ($return_val === 0) 
-                ? "サーバーを起動しました" 
-                : "サーバーの起動に失敗しました";
-            
-            // 少し待ってから状態を再チェック
-            sleep(2);
-            if (file_exists($pid_file)) {
-                $current_pid = trim(file_get_contents($pid_file));
-                $message .= " (新しいPID: $current_pid)";
-            }
-        }
-        break;
-        
-    case 'stop':
-        if ($is_running) {
-            // サーバーを停止
-            exec("kill $current_pid", $output, $return_val);
-            $message = ($return_val === 0) 
-                ? "サーバーを停止しました (PID: $current_pid)" 
-                : "サーバーの停止に失敗しました";
-                
-            if ($return_val === 0) {
-                @unlink($pid_file);
-            }
-        } else {
-            $message = "サーバーは実行されていません";
-        }
-        break;
-        
-    case 'restart':
-        // まず停止
-        if ($is_running) {
-            exec("kill $current_pid", $output, $return_val);
-            if ($return_val !== 0) {
-                $message = "サーバーの停止に失敗しました";
-                break;
-            }
-            @unlink($pid_file);
-            sleep(2);
-        }
-        
-        // 次に起動
-        exec("bash start-server.sh > /dev/null 2>&1 &", $output, $return_val);
-        $message = ($return_val === 0) 
-            ? "サーバーを再起動しました" 
-            : "サーバーの再起動に失敗しました";
-        
-        // 少し待ってから状態を再チェック
-        sleep(2);
-        if (file_exists($pid_file)) {
-            $current_pid = trim(file_get_contents($pid_file));
-            $message .= " (新しいPID: $current_pid)";
-        }
-        break;
-        
-    default:
-        // ステータスのみ表示
-        if ($is_running) {
-            $message = "サーバーは実行中です (PID: $current_pid)";
-        } else {
-            $message = "サーバーは停止しています";
-        }
+// APIを呼び出さない通常のリクエスト処理
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($commands[$action])) {
+        $output = shell_exec($commands[$action] . ' 2>&1');
+        header('Content-Type: application/json');
+        echo json_encode(['success' => true, 'output' => $output]);
+    } else {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => '無効なコマンドです']);
+    }
+    exit;
 }
 
-// ログファイルの内容を取得
-$log_content = '';
-if (file_exists('server.log')) {
-    $log_content = file_get_contents('server.log');
-    // 最大10000文字まで表示
-    if (strlen($log_content) > 10000) {
-        $log_content = '...' . substr($log_content, -10000);
-    }
+// コマンド実行
+if ($action === 'start') {
+    $output = shell_exec($commands['start'] . ' 2>&1');
+    $message = "サーバーを起動しました";
+} 
+elseif ($action === 'stop') {
+    $output = shell_exec($commands['stop'] . ' 2>&1');
+    $message = "サーバーを停止しました";
+}
+elseif ($action === 'restart') {
+    $output = shell_exec($commands['restart'] . ' 2>&1');
+    $message = "サーバーを再起動しました";
+}
+elseif ($action === 'status') {
+    $output = shell_exec($commands['status'] . ' 2>&1');
+    $message = "サーバーステータスを取得しました";
+}
+elseif ($action === 'logs') {
+    $output = shell_exec($commands['logs'] . ' 2>&1');
+    $message = "ログを取得しました";
+}
+else {
+    $message = "利用可能なアクション: start, stop, restart, status, logs";
 }
 ?>
 <!DOCTYPE html>
@@ -139,7 +92,8 @@ if (file_exists('server.log')) {
         .start { background-color: #28a745; }
         .stop { background-color: #dc3545; }
         .restart { background-color: #ffc107; color: #333 !important; }
-        .logs {
+        .logs { background-color: #17a2b8; }
+        .output {
             margin-top: 30px;
         }
         pre {
@@ -150,6 +104,8 @@ if (file_exists('server.log')) {
             word-wrap: break-word;
             border: 1px solid #ddd;
             border-radius: 4px;
+            max-height: 500px;
+            overflow-y: auto;
         }
     </style>
 </head>
@@ -166,12 +122,24 @@ if (file_exists('server.log')) {
         <a href="?action=start" class="start">起動</a>
         <a href="?action=stop" class="stop">停止</a>
         <a href="?action=restart" class="restart">再起動</a>
-        <a href="?" style="color: #333; text-decoration: underline;">ステータス確認</a>
+        <a href="?action=status" class="status">ステータス確認</a>
+        <a href="?action=logs" class="logs">ログ表示</a>
     </div>
     
-    <div class="logs">
-        <h2>サーバーログ</h2>
-        <pre><?php echo htmlspecialchars($log_content); ?></pre>
+    <?php if ($output): ?>
+    <div class="output">
+        <h2><?php echo $action === 'logs' ? 'サーバーログ' : 'コマンド出力'; ?></h2>
+        <pre><?php echo htmlspecialchars($output); ?></pre>
     </div>
+    <?php endif; ?>
+    
+    <script>
+        // タイマーで自動更新（ステータス表示時）
+        <?php if ($action === 'status'): ?>
+        setTimeout(() => {
+            window.location.reload();
+        }, 30000); // 30秒ごとに更新
+        <?php endif; ?>
+    </script>
 </body>
 </html>

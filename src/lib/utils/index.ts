@@ -50,6 +50,9 @@ export function includesIgnoreCase(text: string, search: string): boolean {
   return text.toLowerCase().includes(search.toLowerCase());
 }
 
+// formatting関数は下部に統合されました
+// 削除された重複関数: capitalize, formatCurrency, truncateText, stripHtml, slugify, formatFileSize
+
 // 指定範囲の乱数を生成
 export function getRandomInt(min: number, max: number): number {
   min = Math.ceil(min);

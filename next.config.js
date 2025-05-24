@@ -10,8 +10,8 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // 静的エクスポートに変更
-  output: 'export',
+  // 静的エクスポート設定を削除
+  // output: 'export',
   trailingSlash: true,
 };
 
