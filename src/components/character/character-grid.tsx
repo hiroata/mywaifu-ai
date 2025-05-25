@@ -21,7 +21,7 @@ import {
   Edit,
   Trash,
   Copy,
-  Users,
+  Users as UsersIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -130,7 +130,7 @@ export function CharacterGrid({ characters }: CharacterGridProps) {
           <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-8 text-center">
             <div className="max-w-md mx-auto space-y-4">
               <div className="w-16 h-16 mx-auto bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-                <Users size={24} className="text-blue-600 dark:text-blue-400" />
+                <UsersIcon size={24} className="text-blue-600 dark:text-blue-400" />
               </div>
               <h3 className="text-lg font-medium text-neutral-900 dark:text-neutral-100">
                 {searchQuery
@@ -174,12 +174,7 @@ export function CharacterGrid({ characters }: CharacterGridProps) {
                     new Date().getTime() - character.createdAt.getTime() <
                     7 * 24 * 60 * 60 * 1000
                   } // 1週間以内なら新着
-                  isOnline={Math.random() > 0.7} // ランダムなオンライン状態（実際にはAPIから取得）
-                  isFavorite={false}
-                  onFavoriteToggle={() => {
-                    // お気に入り登録のロジック
-                    console.log(`Toggle favorite for ${character.name}`);
-                  }}
+                  isOnline={Math.random() > 0.7} // ランダムなオンライン状態（実際にはAPIから取得）                  isFavorite={false}
                 />{" "}
               </motion.div>
             ))}
@@ -273,25 +268,4 @@ export function CharacterGrid({ characters }: CharacterGridProps) {
   );
 }
 
-// このコンポーネントはCharacterGridで使用
-function Users(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  );
-}
+// lucide-reactのUsersIconを使用
