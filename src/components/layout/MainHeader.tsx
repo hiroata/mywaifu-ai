@@ -28,7 +28,11 @@ export function MainHeader({
       <div className="container mx-auto px-4 py-3 flex flex-col md:flex-row md:items-center justify-between gap-4">
         {/* ロゴ */}
         <div>
-          <h1 className="text-2xl font-bold text-pink-500">MyWaifuAI</h1>
+          <Link href="/" className="transition-all duration-200 hover:scale-105">
+            <h1 className="text-2xl font-bold text-pink-500 cursor-pointer hover:text-pink-400 transition-colors">
+              MyWaifuAI
+            </h1>
+          </Link>
         </div>
 
         {/* タブナビゲーション */}

@@ -78,79 +78,72 @@ export function Sidebar({ filters, onFilterChange }: SidebarProps) {
         <div>
           <h3 className="text-lg font-semibold mb-3 text-white">フィルター</h3>
         </div>
-        {/* 年齢範囲 */}{" "}
+        {/* 年齢範囲 */}
         <div className="space-y-3">
           <h4 className="text-sm font-medium text-gray-300">年齢</h4>
 
-          {/* 年齢範囲の表示とドロップダウン */}
-          <div className="flex justify-between text-sm text-gray-400 mb-2">
-            <div className="flex items-center gap-2">
-              <span>最小:</span>
-              <select
-                value={ageRange[0]}
-                onChange={(e) => {
-                  const min = Number(e.target.value);
-                  const max = Math.max(min, ageRange[1]);
-                  handleAgeRangeChange([min, max]);
-                }}
-                className="bg-gray-800 text-white rounded px-2 py-1 w-16"
-              >
-                {Array.from({ length: 33 }, (_, i) => i + 18).map((age) => (
-                  <option key={age} value={age}>
-                    {age}
-                  </option>
-                ))}
-              </select>
-              <span>歳</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span>最大:</span>
-              <select
-                value={ageRange[1]}
-                onChange={(e) => {
-                  const max = Number(e.target.value);
-                  const min = Math.min(max, ageRange[0]);
-                  handleAgeRangeChange([min, max]);
-                }}
-                className="bg-gray-800 text-white rounded px-2 py-1 w-16"
-              >
-                {Array.from({ length: 33 }, (_, i) => i + 18).map((age) => (
-                  <option key={age} value={age}>
-                    {age}
-                  </option>
-                ))}
-              </select>
-              <span>歳</span>
-            </div>
-          </div>
-
-          {/* スライダーと数値入力の組み合わせ */}
+          {/* スライダー */}
           <div className="pt-2 px-1">
             <Slider
               value={ageRange}
               min={18}
-              max={50}
+              max={60}
               step={1}
               onValueChange={(value) =>
                 handleAgeRangeChange(value as [number, number])
               }
-              className="[&_[role=slider]]:bg-pink-500"
+              className="[&_[role=slider]]:bg-pink-500 [&_[role=slider]]:border-pink-500 [&_[role=slider]]:ring-pink-200"
             />
           </div>
 
-          {/* 現在の選択範囲を表示 */}
-          <div className="flex justify-between items-center text-sm mt-2">
-            <div className="bg-gray-800 rounded px-3 py-1 text-white flex items-center justify-center">
-              <span className="text-pink-500 font-medium">{ageRange[0]}歳</span>
-              <span className="mx-1 text-gray-400">〜</span>
-              <span className="text-pink-500 font-medium">{ageRange[1]}歳</span>
+          {/* 現在の選択範囲を表示とカスタム入力 */}
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <div className="flex items-center gap-2">
+                <span className="text-gray-400">最小:</span>
+                <input
+                  type="number"
+                  value={ageRange[0]}
+                  onChange={(e) => {
+                    const min = Math.max(18, Math.min(Number(e.target.value), ageRange[1]));
+                    handleAgeRangeChange([min, ageRange[1]]);
+                  }}
+                  className="bg-gray-800 text-pink-400 rounded px-2 py-1 w-16 text-center text-sm border border-gray-700 focus:border-pink-500 focus:outline-none"
+                  min={18}
+                  max={60}
+                />
+                <span className="text-gray-400">歳</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-gray-400">最大:</span>
+                <input
+                  type="number"
+                  value={ageRange[1]}
+                  onChange={(e) => {
+                    const max = Math.min(60, Math.max(Number(e.target.value), ageRange[0]));
+                    handleAgeRangeChange([ageRange[0], max]);
+                  }}
+                  className="bg-gray-800 text-pink-400 rounded px-2 py-1 w-16 text-center text-sm border border-gray-700 focus:border-pink-500 focus:outline-none"
+                  min={18}
+                  max={60}
+                />
+                <span className="text-gray-400">歳</span>
+              </div>
             </div>
-            <button
-              onClick={() => handleAgeRangeChange([18, 50])}
-              className="text-xs text-gray-400 hover:text-pink-400 transition-colors"
-            >
-              リセット
-            </button>
+            
+            <div className="flex justify-between items-center">
+              <div className="bg-gray-800 rounded px-3 py-1 text-white flex items-center justify-center">
+                <span className="text-pink-400 font-medium">{ageRange[0]}歳</span>
+                <span className="mx-2 text-gray-400">〜</span>
+                <span className="text-pink-400 font-medium">{ageRange[1]}歳</span>
+              </div>
+              <button
+                onClick={() => handleAgeRangeChange([18, 30])}
+                className="text-xs text-gray-400 hover:text-pink-400 transition-colors px-2 py-1 rounded hover:bg-gray-800"
+              >
+                リセット
+              </button>
+            </div>
           </div>
         </div>
         {/* キャラクタータイプ */}

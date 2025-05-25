@@ -20,11 +20,15 @@ export async function middleware(request: NextRequest) {
   // レート制限チェック（基本的なDDoS対策）
   const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
   const rateLimitKey = `rate_limit_${ip}`;
-  
-  // API ルートの認証確認
+    // API ルートの認証確認
   if (request.nextUrl.pathname.startsWith('/api/')) {
     // パブリックAPIエンドポイント
-    const publicRoutes = ['/api/health', '/api/auth'];
+    const publicRoutes = [
+      '/api/health', 
+      '/api/auth',
+      '/api/characters/public',
+      '/api/content/public'
+    ];
     const isPublic = publicRoutes.some(route => 
       request.nextUrl.pathname.startsWith(route)
     );
@@ -42,7 +46,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // プライベートページの認証確認
-  const protectedRoutes = ['/dashboard', '/chat', '/characters', '/settings'];
+  const protectedRoutes = ['/dashboard', '/chat', '/settings'];
   const isProtectedRoute = protectedRoutes.some(route =>
     request.nextUrl.pathname.startsWith(route)
   );

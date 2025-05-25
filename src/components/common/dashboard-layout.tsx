@@ -38,7 +38,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* サイドバー - デスクトップ */}
       <aside className="hidden md:flex md:w-64 lg:w-72 flex-col border-r border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950/80 backdrop-blur-sm">
         <div className="p-4 h-16 flex items-center border-b border-neutral-200 dark:border-neutral-800">
-          <Link href="/dashboard" className="flex items-center space-x-2">
+          <Link href="/" className="flex items-center space-x-2 transition-all duration-200 hover:scale-105">
             <div className="w-8 h-8 rounded-xl bg-blue-600 dark:bg-blue-700 flex items-center justify-center text-white">
               <span className="font-bold">M</span>
             </div>
@@ -87,7 +87,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {/* モバイルヘッダー */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-20 h-16 bg-white dark:bg-neutral-950/80 backdrop-blur-sm border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between px-4">
-        <Link href="/dashboard" className="flex items-center space-x-2">
+        <Link href="/" className="flex items-center space-x-2 transition-all duration-200 hover:scale-105">
           <div className="w-8 h-8 rounded-xl bg-blue-600 dark:bg-blue-700 flex items-center justify-center text-white">
             <span className="font-bold">M</span>
           </div>

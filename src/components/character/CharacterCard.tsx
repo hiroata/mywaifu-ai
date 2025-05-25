@@ -50,11 +50,10 @@ export function CharacterCard({
     });
     document.dispatchEvent(event);
   };
-
   return (
     <motion.div whileHover={{ y: -5 }} transition={{ duration: 0.2 }}>
       <Card className="overflow-hidden bg-[#1a1a1a] border-gray-800 h-full hover:shadow-xl transition-all duration-300">
-        <Link href={`/chat/${id}`} className="block h-full relative">
+        <Link href={`/characters/${id}`} className="block h-full relative">
           {" "}
           {/* スタータスバッジ */}
           <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">

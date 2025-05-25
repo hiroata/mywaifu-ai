@@ -46,8 +46,8 @@ export const config = {
   },
   models: {
     xai: {
-      defaultModel: "grok-3-beta",
-      models: ["grok-3-beta"],
+      defaultModel: "grok-3",
+      models: ["grok-3"],
     },
   },
 };
