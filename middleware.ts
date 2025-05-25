@@ -28,10 +28,16 @@ export async function middleware(request: NextRequest) {
     "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https: wss: ws:;"
   );
 
+  // RSCリクエストは処理をスキップ
+  if (request.nextUrl.searchParams.has('_rsc')) {
+    return response;
+  }
+
   // レート制限チェック（基本的なDDoS対策）
   const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
   const rateLimitKey = `rate_limit_${ip}`;
-    // API ルートの認証確認
+    
+  // API ルートの認証確認
   if (request.nextUrl.pathname.startsWith('/api/')) {
     // パブリックAPIエンドポイント
     const publicRoutes = [
@@ -56,13 +62,13 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // プライベートページの認証確認
+  // プライベートページの認証確認（RSCリクエスト以外）
   const protectedRoutes = ['/dashboard', '/chat', '/settings'];
   const isProtectedRoute = protectedRoutes.some(route =>
     request.nextUrl.pathname.startsWith(route)
   );
 
-  if (isProtectedRoute) {
+  if (isProtectedRoute && !request.nextUrl.searchParams.has('_rsc')) {
     const session = await auth();
     if (!session) {
       return NextResponse.redirect(new URL('/login', request.url));
@@ -79,7 +85,10 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - socket.io (WebSocket connections)
+     * - rpc (WebSocket/RPC connections)
+     * - temp/rpc (temporary WebSocket connections)
      */
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next/static|_next/image|favicon.ico|socket\\.io|rpc|temp/rpc).*)',
   ],
 };

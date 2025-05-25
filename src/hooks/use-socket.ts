@@ -23,21 +23,23 @@ export const useSocket = (): UseSocketReturn => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const socketRef = useRef<Socket | null>(null);
-
   useEffect(() => {
     // WebSocketサーバーに接続
     const socketUrl = process.env.NODE_ENV === 'production' 
       ? process.env.NEXT_PUBLIC_SOCKET_URL || window.location.origin
-      : 'http://localhost:3000';
+      : 'http://localhost:3001'; // 開発環境のポートを3001に変更
 
-    console.log('Connecting to WebSocket:', socketUrl);    const newSocket = io(socketUrl, {
+    console.log('Connecting to WebSocket:', socketUrl);
+
+    const newSocket = io(socketUrl, {
       transports: ['websocket', 'polling'],
       upgrade: true,
       rememberUpgrade: true,
       timeout: 20000,
       reconnection: true,
       reconnectionDelay: 1000,
-      reconnectionAttempts: 10,
+      reconnectionAttempts: 5,
+      forceNew: true, // 強制的に新しい接続を作成
     });
 
     socketRef.current = newSocket;
