@@ -131,6 +131,32 @@ docker-compose -f docker/docker-compose.yml up -d
    npm run deploy
    ```
 
+### Render デプロイ設定 ✅
+このプロジェクトは **Render** での自動デプロイが設定済みです。
+
+#### 設定済み項目
+- ✅ `render.yaml` - Render公式仕様準拠
+- ✅ `.github/workflows/deploy.yml` - GitHub Actions自動デプロイ
+- ✅ `package.json` - ビルドスクリプト最適化
+- ✅ socket.io依存関係追加
+- ✅ Prisma migrate deploy設定
+
+#### デプロイフロー
+1. `main`ブランチにpush
+2. GitHub Actionsが自動実行
+3. Prisma migrationsとビルドを実行
+4. RenderのDeploy Hookをトリガー
+5. 本番環境に自動デプロイ
+
+#### 必要なSecrets（GitHub Settings > Secrets）
+- `DATABASE_URL` - RenderのPostgreSQLデータベースURL
+- `RENDER_DEPLOY_HOOK_URL` - RenderのDeploy Hook URL
+- `NEXTAUTH_SECRET` - NextAuth.jsのシークレット
+- `NEXTAUTH_URL` - 本番環境URL (https://mywaifu-ai.onrender.com)
+- その他API Keys（Google OAuth、AI Providers等）
+
+詳細は [`docs/github-actions-deploy-guide.md`](docs/github-actions-deploy-guide.md) を参照してください。
+
 ## プロジェクト構造
 
 ```

@@ -3,10 +3,17 @@
 ## 概要
 このガイドでは、GitHub Actions を使用して MyWaifuAI アプリケーションを Render に自動デプロイする設定方法を説明します。
 
+## ✅ 実装済み項目
+- ✅ `.github/workflows/deploy.yml` の作成
+- ✅ `render.yaml` の Render 公式仕様準拠
+- ✅ `package.json` でのビルドスクリプト最適化
+- ✅ socket.io依存関係の追加
+- ✅ Prisma migrate deploy の設定
+
 ## 📋 前提条件
 - GitHub リポジトリ: `hiroata/mywaifu-ai`
 - Render アカウントとサービスの作成済み
-- Node.js 20 対応
+- Node.js 22 対応
 - Next.js 14 + TypeScript + Prisma 構成
 
 ## 🔧 GitHub Secrets 設定

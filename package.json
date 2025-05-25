@@ -1,9 +1,10 @@
 {
   "name": "mywaifu-ai",
   "version": "0.1.1",
-  "private": true,  "scripts": {
+  "private": true,
+  "scripts": {
     "dev": "next dev",
-    "build": "prisma db push && prisma generate && next build",
+    "build": "npx prisma generate && next build",
     "start": "node server-websocket.js",
     "start:basic": "next start",
     "start:custom": "node server.js",
