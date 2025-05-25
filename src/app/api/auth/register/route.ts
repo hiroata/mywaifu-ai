@@ -14,8 +14,41 @@ export async function POST(request: NextRequest) {
   console.log('Registration request received');
   
   try {
-    const body = await request.json();
-    console.log('Request body parsed successfully');
+    // リクエストボディのサイズと型を確認
+    const contentType = request.headers.get('content-type');
+    console.log('Content-Type:', contentType);
+    
+    if (!contentType || !contentType.includes('application/json')) {
+      console.log('Invalid content type, expected application/json');
+      return NextResponse.json(
+        { error: "Content-Type must be application/json" },
+        { status: 400 },
+      );
+    }
+
+    const rawBody = await request.text();
+    console.log('Raw body length:', rawBody.length);
+    console.log('Raw body (first 100 chars):', rawBody.substring(0, 100));
+    
+    if (!rawBody || rawBody.trim() === '') {
+      console.log('Empty request body');
+      return NextResponse.json(
+        { error: "Request body is empty" },
+        { status: 400 },
+      );
+    }
+
+    let body;
+    try {
+      body = JSON.parse(rawBody);
+      console.log('Request body parsed successfully');
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError);
+      return NextResponse.json(
+        { error: "Invalid JSON format", details: parseError instanceof Error ? parseError.message : 'Unknown parse error' },
+        { status: 400 },
+      );
+    }
 
     // バリデーション
     const validatedData = userSchema.parse(body);

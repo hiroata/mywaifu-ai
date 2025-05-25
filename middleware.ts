@@ -5,6 +5,17 @@ import { auth } from '@/lib/auth';
 
 // CSRF保護とセキュリティヘッダーの設定
 export async function middleware(request: NextRequest) {
+  // API リクエストの詳細ログ（デバッグ用）
+  if (request.nextUrl.pathname.includes('/api/auth/register')) {
+    console.log('=== MIDDLEWARE DEBUG ===');
+    console.log('Request URL:', request.url);
+    console.log('Request method:', request.method);
+    console.log('Request headers:', Object.fromEntries(request.headers.entries()));
+    console.log('Content-Type header:', request.headers.get('content-type'));
+    console.log('User-Agent:', request.headers.get('user-agent'));
+    console.log('========================');
+  }
+
   const response = NextResponse.next();
 
   // セキュリティヘッダーの設定

@@ -45,9 +45,9 @@ export default function RegisterPage() {
       return;
     }
 
-    setIsLoading(true);
-
-    try {
+    setIsLoading(true);    try {
+      console.log('Sending registration request with data:', { name, email, password: '***' });
+      
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
@@ -60,22 +60,47 @@ export default function RegisterPage() {
         }),
       });
 
-      const data = await response.json();
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
 
-      if (!response.ok) {
-        throw new Error(data.error || "登録に失敗しました");
+      let data;
+      const responseText = await response.text();
+      console.log('Raw response:', responseText);
+
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('Failed to parse response as JSON:', parseError);
+        throw new Error(`サーバーから無効なレスポンスを受信しました: ${responseText.substring(0, 100)}`);
       }
 
+      if (!response.ok) {
+        console.error('Registration failed with status:', response.status);
+        throw new Error(data.error || `登録に失敗しました (${response.status})`);
+      }
+
+      console.log('Registration successful:', data);
+
       // 登録成功後、自動的にログイン
-      await signIn("credentials", {
+      const signInResult = await signIn("credentials", {
         email,
         password,
         redirect: false,
       });
 
+      console.log('Sign in result:', signInResult);
+
+      if (signInResult?.error) {
+        console.error('Auto sign-in failed:', signInResult.error);
+        setError("登録は成功しましたが、自動ログインに失敗しました。手動でログインしてください。");
+        setIsLoading(false);
+        return;
+      }
+
       router.push("/dashboard");
       router.refresh();
     } catch (error) {
+      console.error('Registration error:', error);
       if (error instanceof Error) {
         setError(error.message);
       } else {
