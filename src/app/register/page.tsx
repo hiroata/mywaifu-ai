@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { useState, useEffect } from "react";
+import { signIn, getCsrfToken } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,21 @@ export default function RegisterPage() {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [csrfToken, setCsrfToken] = useState("");
+
+  // CSRF トークンを取得
+  useEffect(() => {
+    const fetchCsrfToken = async () => {
+      try {
+        const token = await getCsrfToken();
+        setCsrfToken(token || "");
+        console.log("CSRF token fetched:", token);
+      } catch (error) {
+        console.error("Failed to fetch CSRF token:", error);
+      }
+    };
+    fetchCsrfToken();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,15 +92,16 @@ export default function RegisterPage() {
       if (!response.ok) {
         console.error('Registration failed with status:', response.status);
         throw new Error(data.error || `登録に失敗しました (${response.status})`);
-      }
+      }      console.log('Registration successful:', data);
 
-      console.log('Registration successful:', data);
-
-      // 登録成功後、自動的にログイン
+      // 登録成功後、自動的にログイン（CSRF トークンを使用）
+      console.log("Attempting auto sign-in with CSRF token:", csrfToken);
+      
       const signInResult = await signIn("credentials", {
         email,
         password,
         redirect: false,
+        callbackUrl: "/dashboard",
       });
 
       console.log('Sign in result:', signInResult);
@@ -97,8 +113,14 @@ export default function RegisterPage() {
         return;
       }
 
-      router.push("/dashboard");
-      router.refresh();
+      if (signInResult?.ok) {
+        router.push("/dashboard");
+        router.refresh();
+      } else {
+        console.warn("Sign in result not ok:", signInResult);
+        setError("自動ログインが完了しませんでした。手動でログインしてください。");
+        setIsLoading(false);
+      }
     } catch (error) {
       console.error('Registration error:', error);
       if (error instanceof Error) {
@@ -108,15 +130,31 @@ export default function RegisterPage() {
       }
       setIsLoading(false);
     }
-  };
-  const handleGoogleRegister = () => {
+  };  const handleGoogleRegister = async () => {
     setError("");
     setIsLoading(true);
-    // callbackUrlを絶対URLに変更し、redirectをtrueに設定して強制的にリダイレクト
-    signIn("google", {
-      callbackUrl: `${window.location.origin}/dashboard`,
-      redirect: true,
-    });
+    
+    try {
+      console.log("Starting Google OAuth registration with CSRF token:", csrfToken);
+      
+      // CSRFトークンが利用可能であることを確認
+      if (!csrfToken) {
+        console.warn("CSRF token not available, fetching again...");
+        const token = await getCsrfToken();
+        setCsrfToken(token || "");
+      }
+      
+      const result = await signIn("google", {
+        callbackUrl: `${window.location.origin}/dashboard`,
+        redirect: true,
+      });
+      
+      console.log("Google OAuth result:", result);
+    } catch (error) {
+      console.error("Google OAuth error:", error);
+      setError("Google認証でエラーが発生しました");
+      setIsLoading(false);
+    }
   };
 
   return (

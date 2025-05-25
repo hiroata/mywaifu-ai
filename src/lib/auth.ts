@@ -13,7 +13,10 @@ export const {
   signIn,
   signOut,
 } = NextAuth({
-  adapter: PrismaAdapter(db),  providers: [
+  adapter: PrismaAdapter(db),
+  debug: process.env.NODE_ENV === "development",
+  trustHost: true, // Render.com などのホスティングサービス用
+  providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
