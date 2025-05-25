@@ -8,11 +8,34 @@ const dev = process.env.NODE_ENV !== 'production';
 const hostname = '0.0.0.0';
 const port = process.env.PORT || 3000;
 
+// グローバルエラーハンドラー
+process.on('uncaughtException', (error) => {
+  console.error('未処理の例外:', error);
+  console.error('Stack trace:', error.stack);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('未処理のPromise拒否:', reason);
+  console.error('Promise:', promise);
+  process.exit(1);
+});
+
+console.log('🚀 MyWaifuAI サーバー起動中...');
+console.log('環境変数チェック:');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
+console.log('NEXTAUTH_SECRET:', process.env.NEXTAUTH_SECRET ? 'SET' : 'NOT SET');
+console.log('NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
+console.log('Port:', port);
+
 // Next.jsアプリケーションを初期化
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
+  console.log('Next.jsアプリケーションの準備が完了しました');
+  
   // HTTPサーバーを作成
   const server = createServer(async (req, res) => {
     try {
@@ -79,12 +102,17 @@ app.prepare().then(() => {
       console.error('Socket.IO エラー:', error);
     });
   });
-
   // サーバーを起動
   server.listen(port, (err) => {
-    if (err) throw err;
+    if (err) {
+      console.error('サーバー起動エラー:', err);
+      throw err;
+    }
     console.log(`> Ready on http://${hostname}:${port}`);
     console.log(`> WebSocket server is running`);
     console.log(`> Environment: ${process.env.NODE_ENV}`);
   });
+}).catch((error) => {
+  console.error('Next.jsアプリケーション準備エラー:', error);
+  process.exit(1);
 });
