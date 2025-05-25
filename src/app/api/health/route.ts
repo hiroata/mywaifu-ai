@@ -26,7 +26,9 @@ export async function GET(request: NextRequest) {
         NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET ? 'SET' : 'MISSING',
         NEXTAUTH_URL: process.env.NEXTAUTH_URL || 'MISSING'
       }
-    };    // データベース接続チェック
+    };
+
+    // データベース接続チェック
     try {
       await db.user.count();
       health.services.database = 'ok';
@@ -47,7 +49,9 @@ export async function GET(request: NextRequest) {
     if (missingEnvVars.length > 0) {
       health.status = 'degraded';
       health.services.configuration = `Missing: ${missingEnvVars.join(', ')}`;
-    }    return NextResponse.json(health, {
+    }
+
+    return NextResponse.json(health, {
       status: health.status === 'ok' ? 200 : 503,
       headers: {
         'Cache-Control': 'no-cache',
@@ -70,16 +74,5 @@ export async function GET(request: NextRequest) {
         }
       }
     );
-  }
-}
-      }
-    });
-  } catch (error) {
-    console.error('Health check error:', error);
-    return NextResponse.json({
-      status: 'error',
-      timestamp: new Date().toISOString(),
-      error: 'Health check failed'
-    }, { status: 503 });
   }
 }
