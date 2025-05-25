@@ -1,7 +1,6 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
 
 const cardVariants = cva(
   "rounded-xl bg-white dark:bg-neutral-900 shadow-sm overflow-hidden transition-all duration-200",
@@ -47,24 +46,14 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     { className, variant, size, hover, animate = false, children, ...props },
     ref,
   ) => {
-    const Comp = animate ? motion.div : "div";
-    const animateProps = animate
-      ? {
-          initial: { opacity: 0, y: 20 },
-          animate: { opacity: 1, y: 0 },
-          transition: { duration: 0.3 },
-        }
-      : {};
-
     return (
-      <Comp
+      <div
         ref={ref}
         className={cn(cardVariants({ variant, size, hover, className }))}
-        {...animateProps}
         {...props}
       >
         {children}
-      </Comp>
+      </div>
     );
   },
 );

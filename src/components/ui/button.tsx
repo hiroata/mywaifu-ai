@@ -2,11 +2,10 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
 
 // ボタンのバリエーションを定義
 const buttonVariants = cva(
-  "inline-flex items-center justify-center rounded-full text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center rounded-full text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-95 hover:scale-105",
   {
     variants: {
       variant: {
@@ -41,14 +40,13 @@ export interface ButtonProps
   asChild?: boolean;
 }
 
-// Framerモーションを使用したボタンコンポーネント
+// CSS Transitionsを使用したボタンコンポーネント
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     return (
-      <motion.button
+      <button
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
-        whileTap={{ scale: 0.98 }}
         {...props}
       />
     );

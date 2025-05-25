@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
 export default function PrivacyPage() {
@@ -8,11 +7,9 @@ export default function PrivacyPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-6">
-          <Link href="/register">
-            <Button variant="ghost" className="flex items-center">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              登録ページに戻る
-            </Button>
+          <Link href="/register" className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            登録ページに戻る
           </Link>
         </div>
 
