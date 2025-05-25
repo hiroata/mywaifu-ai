@@ -57,8 +57,7 @@ export const {
         return user;
       },
     }),
-  ],
-  callbacks: {
+  ],  callbacks: {
     async session({ session, token }) {
       if (token.sub && session.user) {
         session.user.id = token.sub;
@@ -74,13 +73,12 @@ export const {
       if (!token.sub) return token;
 
       if (user) {
-        token.role = user.role;
+        token.role = (user as any).role;
       }
 
       return token;
     },
-  },
-  session: {
+  },session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30日間
   },
