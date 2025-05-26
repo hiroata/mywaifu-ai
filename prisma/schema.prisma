@@ -20,10 +20,15 @@ model User {
   createdAt         DateTime           @default(now()) @map("created_at")
   updatedAt         DateTime           @updatedAt @map("updated_at")
   role              String             @default("user") // "user", "premium", "moderator", "admin"
-  // isBlocked         Boolean            @default(false)
-  // lastLoginAt       DateTime?
-  // loginAttempts     Int                @default(0)
-  // blockedUntil      DateTime?
+  isBlocked         Boolean            @default(false)
+  lastLoginAt       DateTime?
+  loginAttempts     Int                @default(0)
+  blockedUntil      DateTime?
+  
+  // 生成関連
+  dailyGenerations  Int                @default(0) @map("daily_generations") // 1日の生成回数
+  lastGeneratedAt   DateTime?          @map("last_generated_at") // 最後の生成日時
+  
   // 関連テーブル
   accounts          Account[]
   sessions          Session[] // NextAuth.js Sessionリレーション追加
@@ -36,6 +41,7 @@ model User {
   contentLikes      ContentLike[]
   contentComments   ContentComment[]
   securityLogs      SecurityLog[]
+  generationLogs    GenerationLog[]
 
   @@map("users")
 }
@@ -97,6 +103,15 @@ model Character {
   updatedAt        DateTime @updatedAt
   isPublic         Boolean  @default(true)
 
+  // AI生成関連の新しいフィールド
+  prompt           String?   // 生成に使用したプロンプト
+  negativePrompt   String?   @map("negative_prompt") // ネガティブプロンプト
+  style            String?   // 'anime' or 'realistic'
+  isGenerated      Boolean   @default(false) @map("is_generated") // AI生成かどうか
+  isOnline         Boolean   @default(false) @map("is_online") // オンライン状態
+  sdModel          String?   @map("sd_model") // 使用したSDモデル
+  generationParams Json?     @map("generation_params") // 生成パラメータ
+
   // 関連テーブル
   users           User[] // お気に入りした/利用したユーザー
   conversations   Conversation[]
@@ -104,6 +119,9 @@ model Character {
   characterVoices CharacterVoice[]
   tags            Tag[]
   contents        CharacterContent[]
+  generationLogs  GenerationLog[]
+
+  @@map("characters")
 }
 
 // CustomCharacter (ユーザー作成キャラクター)
@@ -346,4 +364,28 @@ model SecurityLog {
   @@index([eventType, createdAt])
   @@index([userId, createdAt])
   @@index([severity, createdAt])
+}
+
+// GenerationLog (AI生成ログ)
+model GenerationLog {
+  id             String   @id @default(cuid())
+  userId         String   @map("user_id")
+  prompt         String
+  negativePrompt String?  @map("negative_prompt")
+  style          String   // 'anime' or 'realistic'
+  sdModel        String   @map("sd_model") // 使用したSDモデル
+  status         String   // 'pending', 'completed', 'failed'
+  imageUrl       String?  @map("image_url")
+  characterId    String?  @map("character_id")
+  errorMessage   String?  @map("error_message")
+  generationTime Int?     @map("generation_time") // 生成時間(秒)
+  parameters     Json?    // 生成パラメータ
+  createdAt      DateTime @default(now()) @map("created_at")
+  
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  character Character? @relation(fields: [characterId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@map("generation_logs")
 }

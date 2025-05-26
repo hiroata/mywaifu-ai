@@ -3,6 +3,7 @@
 import { MainHeader, TabType } from "@/components/layout/MainHeader";
 import { Sidebar, FilterState } from "@/components/layout/Sidebar";
 import { CharacterCard } from "@/components/character/CharacterCard";
+import { ImageGenerator } from "@/components/ai/ImageGenerator";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -398,6 +399,11 @@ export default function HomePage() {
 
           {/* メインコンテンツ */}
           <div className="flex-1">
+            {/* AI画像生成セクション */}
+            <div className="mb-8">
+              <ImageGenerator />
+            </div>
+
             {filteredCharacters.length === 0 ? (
               <div className="text-center py-20">
                 <p className="text-xl text-gray-400">

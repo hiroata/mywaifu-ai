@@ -30,3 +30,6 @@ if (process.env.NODE_ENV === "production") {
 }
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;
+
+// API routes での互換性のために prisma も export
+export const prisma = db;

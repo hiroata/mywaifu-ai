@@ -1,0 +1,12 @@
+{
+  "prompt": "beautiful anime girl, long flowing hair, school uniform, cute smile, cherry blossoms background",
+  "negative_prompt": "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality",
+  "style": "anime",
+  "width": 512,
+  "height": 768,
+  "steps": 20,
+  "cfg_scale": 7,
+  "sampler_name": "DPM++ 2M",
+  "seed": -1,
+  "model_name": "🐼_illustriousPencilXL_v200"
+}
