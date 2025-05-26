@@ -3,8 +3,11 @@ import { z } from "zod";
 
 // チャットAPIリクエストスキーマ
 export const chatRequestSchema = z.object({
-  conversationId: z.string(),
-  content: z.string().min(1).max(1000),
+  message: z.string().min(1, "メッセージは必須です").max(1000, "メッセージは1000文字以内で入力してください"),
+  conversationId: z.string().optional(),
+  characterId: z.string().optional(),
+  customCharacterId: z.string().optional(),
+  content: z.string().min(1).max(1000).optional(), // 後方互換性のため
   imagePrompt: z.string().max(200).optional(),
   shouldGenerateVoice: z.boolean().optional().default(false),
   aiProvider: z.enum(["openai", "xai"]).optional().default("openai"),

@@ -9,8 +9,6 @@ import { writeFile } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { characterStore } from "@/store/character-store";
-import { useCharacterStore } from "@/store/character-store";
-import { useCharacterStore } from "@/store/character-store";
 
 // キャラクター作成スキーマ
 const characterSchema = z.object({

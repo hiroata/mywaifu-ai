@@ -2,12 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { validateApiRequest, createApiErrorResponse, createApiSuccessResponse } from "@/lib/security/api-security";
+import { logSecurityEvent, SecurityEvent } from "@/lib/security/security-logger";
+import { validateInput } from "@/lib/content-filter";
 
-// バリデーションスキーマ
-const userSchema = z.object({
-  name: z.string().min(2, "名前は2文字以上で入力してください"),
-  email: z.string().email("有効なメールアドレスを入力してください"),
-  password: z.string().min(8, "パスワードは8文字以上で入力してください"),
+// 強化されたバリデーションスキーマ
+const userRegistrationSchema = z.object({
+  name: z.string()
+    .min(2, "名前は2文字以上で入力してください")
+    .max(50, "名前は50文字以内で入力してください")
+    .regex(/^[a-zA-Z0-9\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\s\-_]+$/, "名前に無効な文字が含まれています"),
+  email: z.string()
+    .email("有効なメールアドレスを入力してください")
+    .max(254, "メールアドレスが長すぎます")
+    .toLowerCase(),
+  password: z.string()
+    .min(8, "パスワードは8文字以上で入力してください")
+    .max(128, "パスワードは128文字以内で入力してください")
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "パスワードは小文字、大文字、数字を含む必要があります"),
 });
 
 export async function POST(request: NextRequest) {
@@ -51,7 +63,7 @@ export async function POST(request: NextRequest) {
     }
 
     // バリデーション
-    const validatedData = userSchema.parse(body);
+    const validatedData = userRegistrationSchema.parse(body);
     const { name, email, password } = validatedData;
     console.log('Data validation passed for email:', email);
 

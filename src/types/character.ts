@@ -1,5 +1,5 @@
 // src/types/character.ts
-import { Tag } from "./common";
+import { Tag } from "./index";
 
 export interface Character {
   id: string;

@@ -1,22 +1,68 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { logSecurityEvent, SecurityEvent } from "@/lib/security/security-logger";
+import { isRateLimited, createApiErrorResponse, createApiSuccessResponse } from "@/lib/security/api-security";
+import { validateInput } from "@/lib/content-filter";
+import { hasPermission, Permission, Role } from "@/lib/security/rbac";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } },
 ) {
+  const userAgent = request.headers.get('user-agent') || 'unknown';
+  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+  
   try {
+    // Rate limiting check
+    if (isRateLimited(`content-detail:${ip}`, 200, 60000)) {
+      await logSecurityEvent(
+        SecurityEvent.RATE_LIMIT_EXCEEDED,
+        request,
+        {
+          endpoint: `/api/content/${params.id}`,
+          method: 'GET'
+        },
+        { severity: 'low' }
+      );
+      return createApiErrorResponse({ message: 'Too many requests', status: 429 });
+    }
+
     // ユーザー認証の確認
     const session = await auth();
     if (!session || !session.user) {
-      return NextResponse.json(
-        { success: false, error: "認証が必要です" },
-        { status: 401 },
+      await logSecurityEvent(
+        SecurityEvent.UNAUTHORIZED_ACCESS,
+        request,
+        {
+          endpoint: `/api/content/${params.id}`,
+          method: 'GET'
+        },
+        { severity: 'low' }
       );
+      return createApiErrorResponse({ message: "認証が必要です", status: 401 });
     }
 
     const contentId = params.id;
+
+    // Content ID validation
+    const contentIdValidation = validateInput(contentId, 50);
+    if (!contentIdValidation.isValid) {
+      await logSecurityEvent(
+        SecurityEvent.SUSPICIOUS_REQUEST,
+        request,
+        {
+          field: 'contentId',
+          value: contentId,
+          reason: 'Input validation failed'
+        },
+        { 
+          userId: session.user.id,
+          severity: 'medium'
+        }
+      );
+      return createApiErrorResponse({ message: "無効なコンテンツIDです", status: 400 });
+    }
 
     // コンテンツの取得
     const content = await db.characterContent.findUnique({
@@ -65,14 +111,38 @@ export async function GET(
     });
 
     if (!content) {
-      return NextResponse.json(
+      await logSecurityEvent(
+        SecurityEvent.SUSPICIOUS_REQUEST,
+        request,
         {
-          success: false,
-          error: "コンテンツが見つかりませんでした",
+          action: 'content_not_found',
+          contentId: contentId
         },
-        { status: 404 },
+        { 
+          userId: session.user.id,
+          severity: 'low'
+        }
       );
+      return createApiErrorResponse({
+        message: "コンテンツが見つかりませんでした",
+        status: 404
+      });
     }
+
+    // セキュリティログ記録 - 成功したアクセス
+    await logSecurityEvent(
+      SecurityEvent.ADMIN_ACTION,
+      request,
+      {
+        action: 'content_detail_accessed',
+        contentId: content.id,
+        contentType: content.contentType
+      },
+      { 
+        userId: session.user.id,
+        severity: 'low'
+      }
+    );
 
     // レスポンスデータの整形
     const formattedContent = {
@@ -99,18 +169,25 @@ export async function GET(
       })),
     };
 
-    return NextResponse.json({
-      success: true,
-      data: formattedContent,
-    });
+    return createApiSuccessResponse(formattedContent);
   } catch (error) {
     console.error("コンテンツ詳細取得エラー:", error);
-    return NextResponse.json(
+    
+    // セキュリティログ記録 - エラー
+    await logSecurityEvent(
+      SecurityEvent.SUSPICIOUS_REQUEST,
+      request,
       {
-        success: false,
-        error: "コンテンツの取得に失敗しました",
+        endpoint: `/api/content/${params.id}`,
+        method: 'GET',
+        error: error instanceof Error ? error.message : 'Unknown error'
       },
-      { status: 500 },
+      { severity: 'high' }
     );
+    
+    return createApiErrorResponse({
+      message: "コンテンツの取得に失敗しました",
+      status: 500
+    });
   }
 }

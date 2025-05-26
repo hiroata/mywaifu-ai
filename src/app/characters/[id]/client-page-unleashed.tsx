@@ -619,11 +619,10 @@ export default function CharacterDetailPageUnleashed({
                     </div>
                     
                     {/* 🔥 制限解除チェックボックス */}
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
+                    <div className="flex items-center space-x-2">                      <Checkbox 
                         id="unleashed"
                         checked={unleashed}
-                        onCheckedChange={setUnleashed}
+                        onCheckedChange={(checked) => setUnleashed(checked === true)}
                         className="border-red-400 data-[state=checked]:bg-red-500"
                       />
                       <label 

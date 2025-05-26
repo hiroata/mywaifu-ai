@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
@@ -32,8 +32,8 @@ interface ChatMessageProps {
     role: "user" | "assistant";
     content: string;
     imageUrl?: string;
-    audioUrl?: string;
-    timestamp: Date;
+    voiceUrl?: string | null;
+    createdAt: Date;
     isLoading?: boolean;
     aiProvider?: "openai" | "xai";
   };
@@ -45,12 +45,11 @@ export function ChatMessage({
   message,
   onRegenerate,
   onDelete,
-}: ChatMessageProps) {
-  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+}: ChatMessageProps) {  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const { toast } = useToast();
   const isAssistant = message.role === "assistant";
-  const audioRef = useState<HTMLAudioElement | null>(null)[1];
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // テキストコピー処理
   const copyToClipboard = () => {
@@ -66,24 +65,23 @@ export function ChatMessage({
     setTimeout(() => {
       setIsCopied(false);
     }, 2000);
-  };
-
-  // 音声再生処理
+  };  // 音声再生処理
   const toggleAudio = () => {
-    if (!message.audioUrl) return;
+    if (!message.voiceUrl) return;
 
-    if (!audioRef) {
-      const audio = new Audio(message.audioUrl);
+    if (!audioRef.current) {
+      const audio = new Audio(message.voiceUrl);
+      audioRef.current = audio;
       audio.addEventListener("ended", () => {
         setIsAudioPlaying(false);
       });
       audio.play();
       setIsAudioPlaying(true);
     } else if (isAudioPlaying) {
-      audioRef.pause();
+      audioRef.current.pause();
       setIsAudioPlaying(false);
     } else {
-      audioRef.play();
+      audioRef.current.play();
       setIsAudioPlaying(true);
     }
   };
@@ -144,10 +142,9 @@ export function ChatMessage({
               ) : (
                 "あなた"
               )}
-            </div>
-            <div className="text-xs text-neutral-500 dark:text-neutral-400">
-              {message.timestamp
-                ? format(new Date(message.timestamp), "M月d日 HH:mm", {
+            </div>            <div className="text-xs text-neutral-500 dark:text-neutral-400">
+              {message.createdAt
+                ? format(new Date(message.createdAt), "M月d日 HH:mm", {
                     locale: ja,
                   })
                 : "送信中..."}
@@ -180,10 +177,8 @@ export function ChatMessage({
                 <span>AIによる生成画像</span>
               </div>
             </Card>
-          )}
-
-          {/* 音声がある場合 */}
-          {message.audioUrl && (
+          )}          {/* 音声がある場合 */}
+          {message.voiceUrl && (
             <Button
               variant="outline"
               size="sm"

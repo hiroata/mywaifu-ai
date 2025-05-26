@@ -18,10 +18,13 @@ import { ImageIcon, SendIcon, MicIcon, SparklesIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ChatInputProps {
-  conversationId: string;
+  conversationId?: string;
+  onSend?: (content: string) => Promise<void>;
+  disabled?: boolean;
+  placeholder?: string;
 }
 
-export function ChatInput({ conversationId }: ChatInputProps) {
+export function ChatInput({ conversationId, onSend, disabled, placeholder }: ChatInputProps) {
   const [message, setMessage] = useState("");
   const [imagePrompt, setImagePrompt] = useState("");
   const [showImageInput, setShowImageInput] = useState(false);
@@ -29,22 +32,28 @@ export function ChatInput({ conversationId }: ChatInputProps) {
   const [aiProvider, setAiProvider] = useState<"openai" | "xai">("openai");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const { sendMessage, isSending } = useChat(conversationId);
+  const { sendMessage, isSending } = useChat(conversationId || "");
   const { isLoading } = useChatStore();
   const { canGenerateImages, canUseVoice } = useSubscription();
   // メッセージ送信ハンドラー
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!message.trim() || isSending) return;
+    if (!message.trim() || isSending || disabled) return;
 
     try {
-      await sendMessage({
-        content: message,
-        ...(showImageInput && imagePrompt ? { imagePrompt } : {}),
-        generateVoice,
-        aiProvider, // AIプロバイダを追加
-      });
+      if (onSend) {
+        // 外部から提供されたonSend関数を使用
+        await onSend(message);
+      } else {
+        // デフォルトのsendMessage関数を使用
+        await sendMessage({
+          content: message,
+          ...(showImageInput && imagePrompt ? { imagePrompt } : {}),
+          generateVoice,
+          aiProvider,
+        });
+      }
 
       // 入力フィールドをリセット
       setMessage("");
@@ -93,10 +102,10 @@ export function ChatInput({ conversationId }: ChatInputProps) {
           <div className="relative flex-1">
             <Textarea
               ref={textareaRef}
-              placeholder="メッセージを入力..."
+              placeholder={placeholder || "メッセージを入力..."}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              disabled={isSending || isLoading}
+              disabled={disabled || isSending || isLoading}
               className="min-h-[60px] w-full pr-14 border-neutral-200 dark:border-neutral-800 rounded-xl focus:ring-blue-600 dark:focus:ring-blue-500"
               variant="outline"
               onKeyDown={(e) => {

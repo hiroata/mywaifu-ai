@@ -52,13 +52,10 @@ export function ChatWindow({ conversationId }: ChatWindowProps) {
       </div>
     );
   }
-
   const handleSendMessage = async (content: string) => {
     try {
       await sendMessage({
         content,
-        role: "user",
-        conversationId,
       });
     } catch (error) {
       console.error("メッセージ送信エラー:", error);
@@ -128,11 +125,10 @@ export function ChatWindow({ conversationId }: ChatWindowProps) {
             </div>
           </motion.div>
         )}
-      </div>
-
-      {/* 入力エリア */}
+      </div>      {/* 入力エリア */}
       <div className="border-t p-4">
         <ChatInput
+          conversationId={conversationId}
           onSend={handleSendMessage}
           disabled={isSending}
           placeholder={`${character?.name || "AI"}にメッセージを送信...`}

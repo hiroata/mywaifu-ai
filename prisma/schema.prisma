@@ -11,17 +11,22 @@ datasource db {
 
 // User (ユーザー)
 model User {
-  id                String    @id @default(cuid())
-  email             String    @unique
+  id                String             @id @default(cuid())
+  email             String             @unique
   name              String?
-  hashedPassword    String?   // NextAuth.jsのGoogle認証用にオプショナルに変更
+  hashedPassword    String? // NextAuth.jsのGoogle認証用にオプショナルに変更
   emailVerified     DateTime?
   image             String?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  role              String    @default("user")  
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  role              String             @default("user") // "user", "premium", "moderator", "admin"
+  // isBlocked         Boolean            @default(false)
+  // lastLoginAt       DateTime?
+  // loginAttempts     Int                @default(0)
+  // blockedUntil      DateTime?
   // 関連テーブル
   accounts          Account[]
+  sessions          Session[] // NextAuth.js Sessionリレーション追加
   characters        Character[]
   conversations     Conversation[]
   subscriptions     Subscription[]
@@ -30,6 +35,7 @@ model User {
   characterContents CharacterContent[]
   contentLikes      ContentLike[]
   contentComments   ContentComment[]
+  securityLogs      SecurityLog[]
 }
 
 // Account (OAuth連携アカウント)
@@ -52,6 +58,15 @@ model Account {
   @@unique([provider, providerAccountId])
 }
 
+// NextAuth.js Session (セッション管理)
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
 // VerificationToken (NextAuth.js 検証トークン)
 model VerificationToken {
   identifier String
@@ -63,245 +78,266 @@ model VerificationToken {
 
 // Character (AIキャラクター - システム提供)
 model Character {
-  id                String    @id @default(cuid())
-  name              String
-  description       String    
-  shortDescription  String?   
-  age               Int?
-  gender            String
-  type              String    // "real" or "anime"
-  personality       String    
-  profileImageUrl   String
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  isPublic          Boolean   @default(true)
-  
+  id               String   @id @default(cuid())
+  name             String
+  description      String
+  shortDescription String?
+  age              Int?
+  gender           String
+  type             String // "real" or "anime"
+  personality      String
+  profileImageUrl  String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  isPublic         Boolean  @default(true)
+
   // 関連テーブル
-  users             User[]    // お気に入りした/利用したユーザー
-  conversations     Conversation[]
-  characterImages   CharacterImage[]
-  characterVoices   CharacterVoice[]
-  tags              Tag[]
-  contents          CharacterContent[]
+  users           User[] // お気に入りした/利用したユーザー
+  conversations   Conversation[]
+  characterImages CharacterImage[]
+  characterVoices CharacterVoice[]
+  tags            Tag[]
+  contents        CharacterContent[]
 }
 
 // CustomCharacter (ユーザー作成キャラクター)
 model CustomCharacter {
-  id                String    @id @default(cuid())
-  userId            String    // 作成者
-  name              String
-  description       String    
-  shortDescription  String?   
-  age               Int?
-  gender            String
-  type              String    // "real" or "anime"
-  personality       String    
-  profileImageUrl   String
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  isPublic          Boolean   @default(false)
-  
+  id               String   @id @default(cuid())
+  userId           String // 作成者
+  name             String
+  description      String
+  shortDescription String?
+  age              Int?
+  gender           String
+  type             String // "real" or "anime"
+  personality      String
+  profileImageUrl  String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  isPublic         Boolean  @default(false)
+
   // 関連テーブル
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  conversations     Conversation[]
-  characterImages   CustomCharacterImage[]
-  characterVoices   CustomCharacterVoice[]
-  tags              Tag[]
-  contents          CharacterContent[]
+  user            User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversations   Conversation[]
+  characterImages CustomCharacterImage[]
+  characterVoices CustomCharacterVoice[]
+  tags            Tag[]
+  contents        CharacterContent[]
 }
 
 // Conversation (チャット会話)
 model Conversation {
-  id                String    @id @default(cuid())
+  id                String   @id @default(cuid())
   userId            String
   characterId       String?
   customCharacterId String?
-  title             String    @default("New Conversation")
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  
+  title             String   @default("New Conversation")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
   // 関連テーブル
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  character         Character? @relation(fields: [characterId], references: [id], onDelete: SetNull)
-  customCharacter   CustomCharacter? @relation(fields: [customCharacterId], references: [id], onDelete: SetNull)
-  messages          Message[]
-  relationship      Relationship?
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  character       Character?       @relation(fields: [characterId], references: [id], onDelete: SetNull)
+  customCharacter CustomCharacter? @relation(fields: [customCharacterId], references: [id], onDelete: SetNull)
+  messages        Message[]
+  relationship    Relationship?
 }
 
 // Message (チャットメッセージ)
 model Message {
-  id                String    @id @default(cuid())
-  conversationId    String
-  content           String    
-  role              String    // "user" or "assistant"
-  hasImage          Boolean   @default(false)
-  imageUrl          String?
-  hasVoice          Boolean   @default(false)
-  voiceUrl          String?
-  aiProvider        String?   // "openai" or "xai"
-  createdAt         DateTime  @default(now())
-  
+  id             String   @id @default(cuid())
+  conversationId String
+  content        String
+  role           String // "user" or "assistant"
+  hasImage       Boolean  @default(false)
+  imageUrl       String?
+  hasVoice       Boolean  @default(false)
+  voiceUrl       String?
+  aiProvider     String? // "openai" or "xai"
+  createdAt      DateTime @default(now())
+
   // 関連テーブル
-  conversation      Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 }
 
 // Relationship (キャラクターとの関係設定)
 model Relationship {
-  id                String    @id @default(cuid())
-  conversationId    String    @unique
-  details           String    
-  loveLevel         Int       @default(0)
-  mood              String    @default("friendly")
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  
+  id             String   @id @default(cuid())
+  conversationId String   @unique
+  details        String
+  loveLevel      Int      @default(0)
+  mood           String   @default("friendly")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
   // 関連テーブル
-  conversation      Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 }
 
 // Subscription (サブスクリプション)
 model Subscription {
-  id                String    @id @default(cuid())
-  userId            String
-  stripeCustomerId  String?
-  stripePriceId     String?
+  id                   String    @id @default(cuid())
+  userId               String
+  stripeCustomerId     String?
+  stripePriceId        String?
   stripeSubscriptionId String?
-  status            String    // "active", "canceled", "past_due"
-  plan              String    // "free", "premium", "ultimate"
-  currentPeriodStart DateTime?
-  currentPeriodEnd  DateTime?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  
+  status               String // "active", "canceled", "past_due"
+  plan                 String // "free", "premium", "ultimate"
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
   // 関連テーブル
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // その他必要なテーブル
 model Tag {
-  id                String    @id @default(cuid())
-  name              String    @unique
-  
+  id   String @id @default(cuid())
+  name String @unique
+
   // 関連テーブル
-  characters        Character[]
-  customCharacters  CustomCharacter[]
+  characters       Character[]
+  customCharacters CustomCharacter[]
 }
 
 model CharacterImage {
-  id                String    @id @default(cuid())
-  characterId       String
-  imageUrl          String
-  isProfileImage    Boolean   @default(false)
-  type              String    // "default", "casual", "swimsuit", etc.
-  
+  id             String  @id @default(cuid())
+  characterId    String
+  imageUrl       String
+  isProfileImage Boolean @default(false)
+  type           String // "default", "casual", "swimsuit", etc.
+
   // 関連テーブル
-  character         Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
 }
 
 model CustomCharacterImage {
-  id                String    @id @default(cuid())
+  id                String  @id @default(cuid())
   customCharacterId String
   imageUrl          String
-  isProfileImage    Boolean   @default(false)
-  type              String    // "default", "casual", "swimsuit", etc.
-  
+  isProfileImage    Boolean @default(false)
+  type              String // "default", "casual", "swimsuit", etc.
+
   // 関連テーブル
-  customCharacter   CustomCharacter @relation(fields: [customCharacterId], references: [id], onDelete: Cascade)
+  customCharacter CustomCharacter @relation(fields: [customCharacterId], references: [id], onDelete: Cascade)
 }
 
 model GalleryImage {
-  id                String    @id @default(cuid())
-  userId            String
-  imageUrl          String
-  prompt            String?   
-  isPublic          Boolean   @default(false)
-  createdAt         DateTime  @default(now())
-  
+  id        String   @id @default(cuid())
+  userId    String
+  imageUrl  String
+  prompt    String?
+  isPublic  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
   // 関連テーブル
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model CharacterVoice {
-  id                String    @id @default(cuid())
-  characterId       String
-  voiceId           String    // ElevenLabs Voice ID
-  sampleUrl         String
-  
+  id          String @id @default(cuid())
+  characterId String
+  voiceId     String // ElevenLabs Voice ID
+  sampleUrl   String
+
   // 関連テーブル
-  character         Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
 }
 
 model CustomCharacterVoice {
-  id                String    @id @default(cuid())
+  id                String @id @default(cuid())
   customCharacterId String
-  voiceId           String    // ElevenLabs Voice ID
+  voiceId           String // ElevenLabs Voice ID
   sampleUrl         String
-  
+
   // 関連テーブル
-  customCharacter   CustomCharacter @relation(fields: [customCharacterId], references: [id], onDelete: Cascade)
+  customCharacter CustomCharacter @relation(fields: [customCharacterId], references: [id], onDelete: Cascade)
 }
 
 // CharacterContent (キャラクターコンテンツ)
 model CharacterContent {
-  id                String    @id @default(cuid())
+  id                String   @id @default(cuid())
   title             String
   description       String
-  contentType       String    // "story", "image", "video"
-  contentUrl        String?   // 画像や動画のURL
-  storyContent      String?   // 小説/ストーリーのテキスト
+  contentType       String // "story", "image", "video"
+  contentUrl        String? // 画像や動画のURL
+  storyContent      String? // 小説/ストーリーのテキスト
   characterId       String?
   customCharacterId String?
   userId            String
-  isPublic          Boolean   @default(true)
-  likes             Int       @default(0)
-  views             Int       @default(0)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  
+  isPublic          Boolean  @default(true)
+  likes             Int      @default(0)
+  views             Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
   // 関連テーブル
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  character         Character? @relation(fields: [characterId], references: [id], onDelete: SetNull)
-  customCharacter   CustomCharacter? @relation(fields: [customCharacterId], references: [id], onDelete: SetNull)
-  comments          ContentComment[]
-  contentTags       ContentTag[]
-  contentLikes      ContentLike[]
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  character       Character?       @relation(fields: [characterId], references: [id], onDelete: SetNull)
+  customCharacter CustomCharacter? @relation(fields: [customCharacterId], references: [id], onDelete: SetNull)
+  comments        ContentComment[]
+  contentTags     ContentTag[]
+  contentLikes    ContentLike[]
 }
 
 // ContentComment (コンテンツへのコメント)
 model ContentComment {
-  id                String    @id @default(cuid())
-  contentId         String
-  userId            String
-  comment           String
-  createdAt         DateTime  @default(now())
-  
+  id        String   @id @default(cuid())
+  contentId String
+  userId    String
+  comment   String
+  createdAt DateTime @default(now())
+
   // 関連テーブル
-  content           CharacterContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content CharacterContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // ContentTag (コンテンツのタグ)
 model ContentTag {
-  id                String    @id @default(cuid())
-  name              String
-  contentId         String
-  
+  id        String @id @default(cuid())
+  name      String
+  contentId String
+
   // 関連テーブル
-  content           CharacterContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
-  
+  content CharacterContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
   @@unique([name, contentId])
 }
 
 // ContentLike (コンテンツのいいね)
 model ContentLike {
-  userId            String
-  contentId         String
-  createdAt         DateTime  @default(now())
-  
+  userId    String
+  contentId String
+  createdAt DateTime @default(now())
+
   // 関連テーブル
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  content           CharacterContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
-  
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content CharacterContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
   // 複合主キー
   @@id([userId, contentId])
+}
+
+// SecurityLog (セキュリティログ)
+model SecurityLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  eventType String // "login", "logout", "failed_login", "rate_limit", etc.
+  severity  String // "LOW", "MEDIUM", "HIGH", "CRITICAL"
+  ipAddress String?
+  userAgent String?
+  resource  String? // API endpoint or resource accessed
+  details   Json? // Additional event details
+  blocked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  // 関連テーブル
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([eventType, createdAt])
+  @@index([userId, createdAt])
+  @@index([severity, createdAt])
 }

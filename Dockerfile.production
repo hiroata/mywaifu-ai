@@ -1,0 +1,67 @@
+# MyWaifu-AI Production Dockerfile
+FROM node:18-alpine AS base
+
+# Install security updates and required packages
+RUN apk update && apk upgrade && apk add --no-cache \
+    libc6-compat \
+    dumb-init \
+    && rm -rf /var/cache/apk/*
+
+# Install dependencies only when needed
+FROM base AS deps
+WORKDIR /app
+
+# Install dependencies based on the preferred package manager
+COPY package.json package-lock.json* ./
+RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
+
+# Rebuild the source code only when needed
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Set build environment
+ENV BUILD_STANDALONE=true
+ENV NODE_ENV=production
+
+# Generate Prisma client
+RUN npx prisma generate
+
+# Build application with optimizations
+RUN npm run build
+
+# Production image, copy all the files and run next
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV production
+
+# Create app user
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Copy built application
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Copy Prisma schema and generated client
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+
+# Copy custom server file
+COPY --from=builder /app/server-websocket.js ./
+
+# Create log directory
+RUN mkdir -p /var/log/mywaifu-ai && chown nextjs:nodejs /var/log/mywaifu-ai
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT 3000
+ENV HOSTNAME "0.0.0.0"
+
+# Run database migrations and start the application
+CMD ["sh", "-c", "npx prisma migrate deploy && node server-websocket.js"]
