@@ -6,10 +6,9 @@ import GoogleProvider from "next-auth/providers/google";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(db),
-  debug: process.env.NODE_ENV === "development",
+  debug: process.env.AUTH_DEBUG === "true",
   trustHost: true,
-  providers: [
-    GoogleProvider({
+  providers: [    GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       allowDangerousEmailAccountLinking: true,
@@ -18,6 +17,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           prompt: "consent",
           access_type: "offline",
           response_type: "code",
+          scope: "openid email profile",
         },
       },
       profile(profile) {
@@ -39,36 +39,38 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         userExists: !!user,
       });
       return true;
-    },
-    async redirect({ url, baseUrl }) {
+    },    async redirect({ url, baseUrl }) {
       console.log("🔄 Auth redirect callback:", { url, baseUrl });
-      // Allow redirect to error page specifically
-      if (url.startsWith(baseUrl + "/auth/error")) {
+      
+      // Allow specific error handling URLs
+      if (url.includes("/auth/error")) {
         return url;
       }
-      // Prevent redirect loops to /api/auth/* routes, except for the error page handled above
-      if (url.includes("/api/auth/")) {
-        console.log(
-          "⚠️ Preventing redirect to auth API:",
-          url,
-          "defaulting to dashboard"
-        );
+      
+      // Prevent infinite redirects to auth API endpoints
+      if (url.includes("/api/auth/") && !url.includes("/auth/error")) {
+        console.log("⚠️ Preventing redirect to auth API, defaulting to dashboard");
         return `${baseUrl}/dashboard`;
       }
-      // If already on login/register or trying to go there after an auth process that should lead elsewhere
-      if (url === baseUrl + "/login" || url === baseUrl + "/register") {
-        console.log("⚠️ Redirecting from auth page to dashboard:", url);
+      
+      // Handle successful authentication redirects
+      if (url === baseUrl || url === `${baseUrl}/` || url === `${baseUrl}/login` || url === `${baseUrl}/register`) {
+        console.log("✅ Successful auth, redirecting to dashboard");
         return `${baseUrl}/dashboard`;
       }
-      // Allow relative URLs that are not auth pages
-      if (url.startsWith("/")) {
+      
+      // Allow relative URLs (within the same domain)
+      if (url.startsWith("/") && !url.startsWith("//")) {
         return `${baseUrl}${url}`;
       }
+      
       // Allow absolute URLs on the same domain
       if (url.startsWith(baseUrl)) {
         return url;
       }
-      console.log("🏠 Defaulting redirect to dashboard:", url);
+      
+      // Default fallback
+      console.log("🏠 Default redirect to dashboard");
       return `${baseUrl}/dashboard`;
     },
     async session({ session, token, user }) {
@@ -104,8 +106,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     strategy: "database",
     maxAge: 30 * 24 * 60 * 60, // 30 days
     updateAge: 24 * 60 * 60, // 24 hours
-  },
-  cookies: {
+  },  cookies: {
     sessionToken: {
       name:
         process.env.NODE_ENV === "production"
@@ -116,10 +117,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         sameSite: "lax",
         path: "/",
         secure: process.env.NODE_ENV === "production",
-        domain:
-          process.env.NODE_ENV === "production"
-            ? ".onrender.com"
-            : undefined,
+        // Remove domain setting for Render.com compatibility
+      },
+    },
+    callbackUrl: {
+      name:
+        process.env.NODE_ENV === "production"
+          ? `__Secure-next-auth.callback-url`
+          : `next-auth.callback-url`,
+      options: {
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+    csrfToken: {
+      name:
+        process.env.NODE_ENV === "production"
+          ? `__Host-next-auth.csrf-token`
+          : `next-auth.csrf-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
       },
     },
   },

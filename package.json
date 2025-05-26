@@ -19,8 +19,7 @@
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts",
     "prepare": "husky install",
     "format": "prettier --write .",
-    "build:render": "npm ci --omit=dev && npx prisma generate && npx prisma migrate deploy && npm run build",
-    "build:docker": "cross-env BUILD_STANDALONE=true npx prisma generate && next build",
+    "build:render": "npm ci --omit=dev && npx prisma generate && npx prisma migrate deploy && npm run build",    "build:docker": "cross-env BUILD_STANDALONE=true npx prisma generate && next build",
     "build:production": "cross-env NODE_ENV=production npm run build:docker",
     "setup:production": "bash scripts/setup-production.sh",
     "deploy:production": "bash scripts/deploy-production.sh",
@@ -81,16 +80,14 @@
     "tailwind-merge": "^2.0.0",
     "tailwindcss": "^3.3.5",
     "tailwindcss-animate": "^1.0.7",
-    "typescript": "^5.2.2",
-    "uuid": "^11.1.0",
+    "typescript": "^5.2.2",    "uuid": "^11.1.0",
     "zod": "^3.22.4",
-    "zustand": "^4.4.6"
-  },
-  "devDependencies": {
+    "zustand": "^4.4.6",
+    "cross-env": "^7.0.3"
+  },  "devDependencies": {
     "@types/node": "^22.15.21",
     "@typescript-eslint/eslint-plugin": "^6.12.0",
     "@typescript-eslint/parser": "^6.12.0",
-    "cross-env": "^7.0.3",
     "eslint-config-prettier": "^9.0.0",
     "husky": "^8.0.3",
     "lint-staged": "^15.1.0",
