@@ -3,7 +3,7 @@
   "version": "0.1.1",
   "private": true,  "scripts": {
     "dev": "next dev",
-    "build": "npx prisma generate && next build",
+    "build": "cross-env NODE_OPTIONS=\"--max-old-space-size=4096\" npx prisma generate && next build",
     "start": "node server-websocket.js",
     "start:basic": "next start",
     "start:custom": "node server.js",
