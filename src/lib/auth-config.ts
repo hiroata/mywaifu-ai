@@ -1,11 +1,11 @@
 // NextAuth configuration
 import NextAuth from "next-auth";
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import { db } from "@/lib/db";
+// import { PrismaAdapter } from "@auth/prisma-adapter";
+// import { db } from "@/lib/db";
 import GoogleProvider from "next-auth/providers/google";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(db),
+  // adapter: PrismaAdapter(db), // 一時的にコメントアウト
   debug: process.env.AUTH_DEBUG === "true",
   trustHost: true,
   providers: [    GoogleProvider({
@@ -72,41 +72,51 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // Default fallback
       console.log("🏠 Default redirect to dashboard");
       return `${baseUrl}/dashboard`;
-    },
-    async session({ session, token, user }) {
+    },    async session({ session, token }) {
+      // JWT戦略: tokenからsessionに情報をコピー
       if (token?.sub && session.user) {
         session.user.id = token.sub;
+      }
+      if (token?.email && session.user) {
+        session.user.email = token.email;
+      }
+      if (token?.name && session.user) {
+        session.user.name = token.name;
+      }
+      if (token?.picture && session.user) {
+        session.user.image = token.picture;
       }
       if (token?.role && session.user) {
         session.user.role = token.role as string;
       }
-      // If using database strategy, user object from DB is available
-      if (user?.role && session.user) {
-        session.user.role = user.role;
-      }
-      if (user?.id && session.user) {
-        session.user.id = user.id;
-      }
       return session;
     },
     async jwt({ token, user, account, profile }) {
+      // 初回ログイン時：userからtokenに情報をコピー
       if (user) {
-        // This block runs on sign-in
         token.sub = user.id;
         token.email = user.email;
         token.name = user.name;
         token.picture = user.image;
-        // Ensure role from user object (potentially from profile mapping) is added to token
         token.role = (user as any).role || "user";
       }
+      
+      // Google OAuth時：profileからtokenに情報をコピー
+      if (account?.provider === "google" && profile) {
+        token.sub = profile.sub;
+        token.email = profile.email;
+        token.name = profile.name;
+        token.picture = profile.picture;
+        token.role = "user";
+      }
+      
       return token;
     },
-  },
-  session: {
-    strategy: "database",
+  },  session: {
+    strategy: "jwt", // データベースなしでJWT戦略を使用
     maxAge: 30 * 24 * 60 * 60, // 30 days
     updateAge: 24 * 60 * 60, // 24 hours
-  },  cookies: {
+  },cookies: {
     sessionToken: {
       name:
         process.env.NODE_ENV === "production"
