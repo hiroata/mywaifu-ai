@@ -47,30 +47,34 @@ const nextConfig = {  // プロダクション向け設定
             value: process.env.NODE_ENV === 'production' 
               ? 'max-age=31536000; includeSubDomains; preload' 
               : 'max-age=0',
-          },
-          {
+          },          {
             key: 'Content-Security-Policy',
             value: process.env.NODE_ENV === 'production' ? [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' https://apis.google.com https://accounts.google.com",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://apis.google.com https://accounts.google.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: https:",
               "font-src 'self' https://fonts.gstatic.com",
               "connect-src 'self' https: wss:",
               "frame-ancestors 'none'",
               "frame-src https://accounts.google.com",
+              "form-action 'self' https://accounts.google.com",
+              "object-src 'none'",
               "base-uri 'self'",
-              "form-action 'self'",
               "upgrade-insecure-requests"
             ].join('; ') : [
+              // 開発環境ではより緩和されたCSP
               "default-src 'self'",
               "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://apis.google.com https://accounts.google.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: https: blob:",
               "font-src 'self' https://fonts.gstatic.com",
-              "connect-src 'self' https: wss: ws:",
+              "connect-src 'self' https: wss: ws: localhost:*",
               "frame-ancestors 'none'",
-              "frame-src https://accounts.google.com"
+              "frame-src 'self' https://accounts.google.com",
+              "form-action 'self' https://accounts.google.com",
+              "object-src 'none'",
+              "base-uri 'self'"
             ].join('; ')
           }
         ],

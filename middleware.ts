@@ -11,6 +11,8 @@ import { getToken } from "next-auth/jwt";
  * 強化されたセキュリティヘッダーを取得
  */
 function getSecurityHeaders(): Record<string, string> {
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  
   return {
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'DENY',
@@ -20,7 +22,21 @@ function getSecurityHeaders(): Record<string, string> {
     'Strict-Transport-Security': process.env.NODE_ENV === 'production' 
       ? 'max-age=31536000; includeSubDomains' 
       : 'max-age=0',
-    'Content-Security-Policy': [
+    'Content-Security-Policy': isDevelopment ? [
+      // 開発環境ではより緩和されたCSP
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://apis.google.com https://accounts.google.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "img-src 'self' data: https: blob:",
+      "font-src 'self' https://fonts.gstatic.com",
+      "connect-src 'self' https: wss: ws: localhost:*",
+      "frame-ancestors 'none'",
+      "frame-src 'self' https://accounts.google.com",
+      "form-action 'self' https://accounts.google.com",
+      "object-src 'none'",
+      "base-uri 'self'"
+    ].join('; ') : [
+      // 本番環境での適切なCSP
       "default-src 'self'",
       "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://apis.google.com https://accounts.google.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
@@ -28,7 +44,10 @@ function getSecurityHeaders(): Record<string, string> {
       "font-src 'self' https://fonts.gstatic.com",
       "connect-src 'self' https: wss: ws:",
       "frame-ancestors 'none'",
-      "frame-src https://accounts.google.com"
+      "frame-src https://accounts.google.com",
+      "form-action 'self' https://accounts.google.com",
+      "object-src 'none'",
+      "base-uri 'self'"
     ].join('; ')
   };
 }
