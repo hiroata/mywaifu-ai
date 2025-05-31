@@ -5,7 +5,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -53,12 +53,12 @@ model Account {
   type              String
   provider          String
   providerAccountId String  @map("provider_account_id")
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -122,6 +122,66 @@ model Character {
   generationLogs  GenerationLog[]
 
   @@map("characters")
+}
+
+// 画像生成ログテーブル
+model GenerationLog {
+  id            String   @id @default(cuid())
+  userId        String
+  prompt        String   @db.Text
+  negativePrompt String? @db.Text
+  style         String   @default("anime")
+  sdModel       String   @default("stable-diffusion-xl")
+  status        String   @default("pending") // pending, completed, failed
+  imageUrl      String?
+  errorMessage  String?
+  generationTime Int?    // 生成時間（秒）
+  characterId   String?
+  parameters    Json?    // 生成パラメータ
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  character     Character? @relation(fields: [characterId], references: [id], onDelete: SetNull)
+
+  @@map("generation_logs")
+}
+
+// セキュリティログテーブル
+model SecurityLog {
+  id        String   @id @default(cuid())
+  event     String
+  userId    String?
+  sessionId String?
+  ip        String
+  userAgent String   @db.Text
+  path      String
+  method    String
+  details   Json?
+  severity  String   // low, medium, high, critical
+  blocked   Boolean  @default(false)
+  timestamp DateTime @default(now())
+
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([ip, timestamp])
+  @@index([userId, timestamp])
+  @@index([event, timestamp])
+  @@map("security_logs")
+}
+
+// ユーザーテーブルに追加フィールド
+model UserExtension {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  dailyGenerations  Int      @default(0)
+  lastGeneratedAt   DateTime?
+  totalGenerations  Int      @default(0)
+  generationCredits Int      @default(0)
+  
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_extensions")
 }
 
 // CustomCharacter (ユーザー作成キャラクター)

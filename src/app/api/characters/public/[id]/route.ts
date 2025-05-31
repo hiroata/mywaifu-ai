@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { database } from "@/lib/database";
 
 export async function GET(
   request: NextRequest,
@@ -9,7 +9,7 @@ export async function GET(
     const { id } = params;
 
     // 公開キャラクターを取得（認証不要）
-    const character = await db.character.findFirst({
+    const character = await database.character.findFirst({
       where: {
         OR: [
           { id },
@@ -24,7 +24,7 @@ export async function GET(
 
     // キャラクターが見つからない場合はカスタムキャラクターも確認
     if (!character) {
-      const customCharacter = await db.customCharacter.findFirst({
+      const customCharacter = await database.customCharacter.findFirst({
         where: {
           OR: [
             { id },

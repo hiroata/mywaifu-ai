@@ -252,3 +252,82 @@ export async function validateImageDimensions(
     return { isValid: false, error: 'Failed to validate image dimensions' };
   }
 }
+
+/**
+ * セキュアなファイルアップロード処理
+ *
+ * @param file アップロードするファイル
+ * @param options アップロードオプション
+ * @returns アップロード結果
+ */
+export async function processFileUpload(
+  file: File,
+  options: {
+    allowedTypes: string[];
+    maxSize: number;
+    scanForMalware?: boolean;
+    generateSecureName?: boolean;
+  }
+): Promise<{
+  success: boolean;
+  filePath?: string;
+  fileName?: string;
+  error?: string;
+}> {
+  try {
+    // ファイルサイズチェック
+    if (file.size > options.maxSize) {
+      return {
+        success: false,
+        error: `File size exceeds limit of ${Math.round(options.maxSize / 1024 / 1024)}MB`
+      };
+    }
+
+    // ファイルタイプチェック
+    if (!options.allowedTypes.includes(file.type)) {
+      return {
+        success: false,
+        error: `Invalid file type. Allowed: ${options.allowedTypes.join(', ')}`
+      };
+    }
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    // 実際のファイルタイプを検証
+    const fileType = await fileTypeFromBuffer(buffer);
+    if (!fileType || !options.allowedTypes.includes(fileType.mime)) {
+      return {
+        success: false,
+        error: 'File type validation failed'
+      };
+    }
+
+    // マルウェアスキャン
+    if (options.scanForMalware && containsSuspiciousContent(buffer)) {
+      return {
+        success: false,
+        error: 'File contains suspicious content'
+      };
+    }
+
+    // セキュアなファイル名生成
+    const fileName = options.generateSecureName
+      ? generateSecureFileName(file.name, fileType.ext)
+      : file.name;
+
+    // ファイルパスを生成（実際の保存処理は呼び出し側で実装）
+    const filePath = `/uploads/${fileName}`;
+
+    return {
+      success: true,
+      filePath,
+      fileName
+    };
+  } catch (error) {
+    console.error('Secure upload error:', error);
+    return {
+      success: false,
+      error: 'Upload processing failed'
+    };
+  }
+}

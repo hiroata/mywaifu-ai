@@ -64,3 +64,73 @@ export async function generateImage({
     throw new Error("画像の生成中にエラーが発生しました");
   }
 }
+
+// 新しい画像生成インターface（imageGeneratorService用）
+interface StableDiffusionOptions {
+  prompt: string;
+  negative_prompt?: string;
+  width?: number;
+  height?: number;
+  steps?: number;
+  cfg_scale?: number;
+  sampler_name?: string;
+}
+
+interface StableDiffusionResult {
+  success: boolean;
+  imageUrl?: string;
+  error?: string;
+}
+
+// 新しい画像生成関数（結果を統一形式で返す）
+export async function generateImageStableDiffusion(options: StableDiffusionOptions): Promise<StableDiffusionResult> {
+  try {
+    const imageUrl = await generateImage({
+      prompt: options.prompt,
+      negativePrompt: options.negative_prompt,
+      width: options.width || 512,
+      height: options.height || 512,
+      steps: options.steps || 20,
+      cfgScale: options.cfg_scale || 7,
+    });
+
+    return {
+      success: true,
+      imageUrl: imageUrl,
+    };
+  } catch (error) {
+    console.error('Stable Diffusion generation failed:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+    };
+  }
+}
+
+// 利用可能なサンプラー一覧
+export const AVAILABLE_SAMPLERS = [
+  'DPM++ 2M Karras',
+  'DPM++ SDE Karras',
+  'Euler a',
+  'Euler',
+  'LMS',
+  'Heun',
+  'DPM2',
+  'DPM2 a',
+  'DPM++ 2S a',
+  'DPM++ 2M',
+  'DPM++ SDE',
+  'DPM fast',
+  'DPM adaptive',
+  'LMS Karras',
+  'DPM2 Karras',
+  'DPM2 a Karras',
+  'DPM++ 2S a Karras',
+];
+
+// 利用可能なモデル一覧
+export const AVAILABLE_MODELS = [
+  'stable-diffusion-xl-1024-v1-0',
+  'stable-diffusion-v1-6',
+  'stable-diffusion-512-v2-1',
+];

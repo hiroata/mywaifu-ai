@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { database } from "@/lib/database";
 import { logSecurityEvent, SecurityEvent } from "@/lib/security/security-logger";
 import { isRateLimited, createApiErrorResponse, createApiSuccessResponse } from "@/lib/security/api-security";
 import { validateInput } from "@/lib/content-filter";
@@ -62,10 +62,8 @@ export async function GET(
         }
       );
       return createApiErrorResponse({ message: "無効なコンテンツIDです", status: 400 });
-    }
-
-    // コンテンツの取得
-    const content = await db.characterContent.findUnique({
+    }    // コンテンツの取得
+    const content = await database.characterContent.findUnique({
       where: {
         id: contentId,
         OR: [{ isPublic: true }, { userId: session.user.id }],

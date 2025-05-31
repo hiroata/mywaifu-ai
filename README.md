@@ -1,258 +1,228 @@
-# MyWaifuAI - 日本人(実写)と日本人(アニメ)キャラクターに特化したAIコンパニオンサービス
+# MyWaifu AI - Advanced AI Character Platform
 
-## プロジェクト概要
+MyWaifu AIは、最先端のAI技術を活用したキャラクター生成・対話プラットフォームです。Stable DiffusionとOpenAI GPTを組み合わせ、ユーザーが理想のAIキャラクターとリアルタイムで交流できる環境を提供します。
 
-MyWaifuAI（マイワイフAI）は、日本人キャラクターに特化したAIコンパニオンサービスのWebアプリケーションです。
-ユーザーは様々なキャラクターとテキスト、音声、画像を通じてコミュニケーションを取ることができます。
+## 🌟 主要機能
 
-### 主な機能
+### AI画像生成
+- **Stable Diffusion XL統合**: 高品質なキャラクター画像生成
+- **プロンプト最適化**: 自動的なプロンプト強化とスタイル調整
+- **マルチプロバイダー対応**: Stability AI、OpenAI DALL-E対応準備
+- **品質制御**: 不適切コンテンツフィルタリングとセーフティチェック
 
-- 日本人（実写）および日本人風アニメキャラクターとのチャット会話
-- カスタムキャラクターの作成と編集
-- 画像生成機能（会話の中で画像を生成）
-- 音声合成機能（キャラクターの声での会話）
-- プレミアム会員向けの追加機能
+### AIチャット
+- **リアルタイム対話**: WebSocket基盤の即座レスポンス
+- **キャラクター記憶**: 過去の会話を記憶した一貫性のある対話
+- **感情表現**: キャラクターの感情状態に基づく応答生成
+- **多言語対応**: 日本語、英語での自然な会話
 
-## 技術スタック
+### セキュリティ・安全性
+- **コンテンツフィルタリング**: 不適切な内容の自動検出・ブロック
+- **レート制限**: API乱用防止とリソース保護
+- **セキュリティログ**: 全アクティビティの監視・記録
+- **データ保護**: 暗号化とプライバシー保護
 
-- **フロントエンド**: TypeScript + Next.js 14 (App Router) + Tailwind CSS + shadcn/ui
-- **バックエンド**: Next.js API Routes + Server Actions
-- **データベース**: MySQL + Prisma ORM
-- **認証**: NextAuth.js
-- **状態管理**: Zustand + React Context API
-- **API通信**: TanStack Query
-- **フォーム**: React Hook Form + Zod
-- **AI連携**:
-  - OpenAI API (GPT-4o)
-  - xAI API (Grok 3)
-  - Stable Diffusion API
-  - ElevenLabs API
-- **決済処理**: Stripe
+### サブスクリプション
+- **柔軟なプラン**: Free、Premium、Ultimateの3段階
+- **Stripe統合**: 安全な決済処理
+- **使用量管理**: プランに応じた機能制限
 
-## セットアップ手順
+## 🚀 技術スタック
 
-### 必要条件
+### フロントエンド
+- **Next.js 14**: React App Router、Server Components
+- **TypeScript**: 型安全性とコード品質
+- **Tailwind CSS**: モダンなレスポンシブデザイン
+- **Framer Motion**: 滑らかなアニメーション
+- **Radix UI**: アクセシブルなコンポーネント
 
-- Node.js 18.0.0以上
-- MySQL 8.0以上
-- Docker (オプション、開発環境用)
+### バックエンド
+- **Node.js**: サーバーサイドJavaScript
+- **Prisma**: 型安全なデータベースORM
+- **MySQL**: リレーショナルデータベース
+- **NextAuth.js**: 認証・セッション管理
+- **Socket.io**: リアルタイム通信
 
-### 環境変数の設定
+### AI・機械学習
+- **OpenAI GPT-4**: 自然言語処理・対話生成
+- **Stability AI**: Stable Diffusion画像生成
+- **Content Filtering**: 不適切コンテンツ検出
 
-`.env.example`ファイルを`.env`にコピーし、以下の環境変数を設定してください：
+### インフラ・DevOps
+- **Docker**: コンテナ化とデプロイメント
+- **Jest**: ユニット・統合テスト
+- **ESLint/Prettier**: コード品質管理
+- **Husky**: Git hooks自動化
 
-```
-# データベース設定
-DATABASE_URL="mysql://user:password@localhost:3306/mywaifu_ai"
+## 📦 インストール・セットアップ
 
-# NextAuth設定
-NEXTAUTH_SECRET="your-nextauth-secret"
-NEXTAUTH_URL="http://localhost:3000"
-
-# OAuth Providers
-GOOGLE_CLIENT_ID="your-google-client-id"
-GOOGLE_CLIENT_SECRET="your-google-client-secret"
-TWITTER_CLIENT_ID="your-twitter-client-id"
-TWITTER_CLIENT_SECRET="your-twitter-client-secret"
-
-# OpenAI API
-OPENAI_API_KEY="your-openai-api-key"
-
-# xAI API (Grok)
-XAI_API_KEY="your-xai-api-key"
-XAI_API_URL="https://api.grok.x.ai/v1" # デフォルトのAPI URL
-
-# Stable Diffusion API
-STABLE_DIFFUSION_API_URL="your-stable-diffusion-api-url"
-STABLE_DIFFUSION_API_KEY="your-stable-diffusion-api-key"
-
-# ElevenLabs API
-ELEVENLABS_API_KEY="your-elevenlabs-api-key"
-
-# Stripe API
-STRIPE_SECRET_KEY="your-stripe-secret-key"
-STRIPE_WEBHOOK_SECRET="your-stripe-webhook-secret"
-STRIPE_PREMIUM_PRICE_ID="price_xxxx"
-STRIPE_ULTIMATE_PRICE_ID="price_xxxx"
-```
-
-### インストールと実行
-
-1. 依存関係のインストール：
-
-   ```bash
-   npm install
-   ```
-
-2. Prismaクライアントの生成：
-
-   ```bash
-   npm run prisma:generate
-   ```
-
-3. データベースのマイグレーション：
-
-   ```bash
-   npm run prisma:push
-   ```
-
-4. 初期データの投入：
-
-   ```bash
-   npm run seed
-   ```
-
-5. 開発サーバーの起動：
-
-   ```bash
-   npm run dev
-   ```
-
-6. ブラウザで http://localhost:3000 へアクセス
-
-### Dockerを使用した開発環境
-
+### 前提条件
 ```bash
-docker-compose -f docker/docker-compose.yml up -d
+Node.js 18+ 
+MySQL 8.0+
+Docker (オプション)
 ```
 
-## デプロイ
+### 環境構築
+```bash
+# リポジトリクローン
+git clone https://github.com/your-username/mywaifu-ai.git
+cd mywaifu-ai
 
-### ロリポップサーバーへのデプロイ
+# 依存関係インストール
+npm install
 
-1. ビルド：
+# 環境変数設定
+cp .env.example .env
+# .envファイルを編集して必要な値を設定
 
-   ```bash
-   npm run build
-   ```
+# データベースセットアップ
+npm run prisma:generate
+npm run prisma:push
 
-2. デプロイスクリプトの実行：
-   ```bash
-   npm run deploy
-   ```
-
-### Vercel デプロイ設定 ✅
-このプロジェクトは **Vercel** での自動デプロイが設定済みです。
-
-#### 設定済み項目
-- ✅ `.github/workflows/deploy.yml` - GitHub Actions自動デプロイ
-- ✅ `package.json` - ビルドスクリプト最適化
-- ✅ socket.io依存関係追加
-- ✅ Prisma Client生成設定
-
-#### デプロイフロー
-1. `main`ブランチにpush → 本番デプロイ
-2. Pull Request作成 → プレビューデプロイ
-3. GitHub Actionsが自動実行
-4. Prisma Clientの生成とビルドを実行
-5. Vercel APIで自動デプロイ
-
-#### 必要なSecrets（GitHub Settings > Secrets）
-- `VERCEL_TOKEN` - Vercel API Token
-- `VERCEL_PROJECT_ID` - Vercel Project ID
-- `VERCEL_ORG_ID` - Vercel Organization ID
-- `DATABASE_URL` - データベースURL
-- `NEXTAUTH_SECRET` - NextAuth.jsのシークレット
-- `NEXTAUTH_URL` - 本番環境URL (https://your-domain.vercel.app)
-- その他API Keys（Google OAuth、AI Providers等）
-
-詳細は [`docs/vercel-deploy-guide.md`](docs/vercel-deploy-guide.md) を参照してください。
-
-## プロジェクト構造
-
-```
-mywaifu-ai/
-├── prisma/                  # Prismaスキーマとマイグレーション
-├── public/                  # 静的ファイル
-│   ├── assets/              # 画像やアイコン
-│   ├── uploads/             # アップロードされたファイル
-│   └── locales/             # 多言語化ファイル
-├── src/
-│   ├── app/                 # Next.js App Router
-│   ├── components/          # Reactコンポーネント
-│   ├── hooks/               # カスタムReactフック
-│   ├── lib/                 # ユーティリティ関数
-│   ├── server/              # サーバーサイド専用コード
-│   ├── store/               # Zustandストア
-│   └── types/               # 型定義
-└── scripts/                 # ユーティリティスクリプト
+# 開発サーバー起動
+npm run dev
 ```
 
-## サブスクリプションプラン
+### 環境変数設定
+```env
+# データベース
+DATABASE_URL="mysql://username:password@localhost:3306/mywaifu_ai"
 
-- **無料プラン**: 基本機能を利用可能
+# 認証
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-secret-key"
 
-  - プリセットキャラクターとの会話
-  - 1日5回までのAI会話
-  - テキストチャットのみ
+# AI APIs
+OPENAI_API_KEY="your-openai-key"
+STABILITY_API_KEY="your-stability-key"
 
-- **プレミアムプラン** (月額980円):
+# 決済
+STRIPE_SECRET_KEY="your-stripe-secret"
+STRIPE_PUBLISHABLE_KEY="your-stripe-public"
 
-  - カスタムキャラクターの作成（最大3体）
-  - 1日50回までのAI会話
-  - 音声チャット機能
-  - 優先サポート
+# ファイルストレージ (オプション)
+CLOUDINARY_URL="your-cloudinary-url"
+```
 
-- **アルティメットプラン** (月額1980円):
-  - 無制限のカスタムキャラクター作成
-  - 無制限のAI会話
-  - 音声・画像生成機能
-  - VIP優先サポート
-  - 最新機能への早期アクセス
+## 🧪 テスト
 
-## Google OAuth認証の設定方法
+### テスト実行
+```bash
+# 全テスト実行
+npm test
 
-Google OAuthを使った認証機能を追加するためには、以下の手順に従ってください：
+# 監視モード
+npm run test:watch
 
-1. Google Cloud Consoleにアクセスする：
+# カバレッジ測定
+npm run test:coverage
+```
 
-   - [Google Cloud Console](https://console.cloud.google.com/)にアクセスし、アカウントでログインします。
+### テスト種類
+- **ユニットテスト**: 個別機能の動作確認
+- **統合テスト**: API エンドポイントの検証
+- **セキュリティテスト**: 脆弱性スキャン
 
-2. プロジェクトを作成する：
+## 🛡️ セキュリティ機能
 
-   - 「新しいプロジェクト」を作成します。
-   - プロジェクト名を入力し、「作成」をクリックします。
+### コンテンツセーフティ
+- 不適切プロンプト検出・ブロック
+- 画像コンテンツ自動審査
+- ユーザー報告システム
 
-3. OAuth同意画面を設定する：
+### API保護
+- レート制限による乱用防止
+- 認証トークン検証
+- CORS設定とセキュリティヘッダー
 
-   - 左側のナビゲーションから「APIとサービス」>「OAuth同意画面」を選択します。
-   - ユーザータイプ（「外部」または「内部」）を選択し、「作成」をクリックします。
-   - アプリ名、ユーザーサポートメール、デベロッパーの連絡先情報を入力します。
-   - 「保存して次へ」をクリックします。
-   - スコープセクションでは、デフォルトのスコープのまま「保存して次へ」をクリックします。
-   - テストユーザーを追加し、「保存して次へ」をクリックします。
-   - 概要を確認し、「ダッシュボードに戻る」をクリックします。
+### データ保護
+- パスワードハッシュ化
+- セッション管理
+- 個人情報暗号化
 
-4. 認証情報を作成する：
+## 📊 監視・ログ
 
-   - 左側のナビゲーションから「APIとサービス」>「認証情報」を選択します。
-   - 「認証情報を作成」をクリックし、「OAuthクライアントID」を選択します。
-   - アプリケーションの種類として「ウェブアプリケーション」を選択します。
-   - 任意の名前を入力します。
-   - 「承認済みリダイレクトURI」に以下を追加します：
+### セキュリティログ
+- 不審なアクセス検出
+- API使用状況追跡
+- エラー・例外記録
 
-     ```bash
-     http://localhost:3000/api/auth/callback/google
-     https://your-production-domain.com/api/auth/callback/google
-     ```
+### パフォーマンス監視
+- レスポンス時間測定
+- リソース使用量追跡
+- ユーザー行動分析
 
-   - 「作成」をクリックします。
+## 🚀 デプロイメント
 
-5. クライアントIDとクライアントシークレットをコピーする：
+### Docker利用
+```bash
+# イメージビルド
+npm run build:docker
 
-   - 表示されたクライアントIDとクライアントシークレットをコピーします。
+# コンテナ起動
+docker-compose up -d
+```
 
-6. 環境変数を設定する：
+### 本番環境デプロイ
+```bash
+# 本番ビルド
+npm run build:production
 
-   - `.env`ファイルに以下の環境変数を追加します：
+# 本番サーバー起動
+npm run start:production
+```
 
-     ```bash
-     GOOGLE_CLIENT_ID="コピーしたクライアントID"
-     GOOGLE_CLIENT_SECRET="コピーしたクライアントシークレット"
-     ```
+## 📈 パフォーマンス
 
-これで、アプリケーションでGoogleを使った認証が可能になります。開発サーバーを再起動して、ログインページからGoogle認証を試してみてください。
+### 最適化技術
+- **Server Components**: 初期ロード高速化
+- **Image Optimization**: 自動画像圧縮・配信
+- **Caching Strategy**: 効果的なキャッシング
+- **Code Splitting**: 必要なコードのみロード
 
-## ライセンス
+### スケーラビリティ
+- 水平スケーリング対応
+- データベース読み取り分散
+- CDN統合による配信最適化
 
-本プロジェクトは非公開プロジェクトであり、権利は所有者に帰属します。
+## 🤝 コントリビューション
+
+### 開発参加
+1. フォークを作成
+2. フィーチャーブランチ作成
+3. 変更をコミット
+4. プルリクエスト作成
+
+### コーディング規約
+- TypeScript strict mode
+- ESLint/Prettier準拠
+- コミットメッセージ規約
+
+## 📋 ロードマップ
+
+### 近日実装予定
+- [ ] キャラクター音声生成
+- [ ] ARアバター表示
+- [ ] グループチャット機能
+- [ ] キャラクター市場
+
+### 長期計画
+- [ ] モバイルアプリ開発
+- [ ] VR対応
+- [ ] マルチモーダルAI統合
+- [ ] ブロックチェーン連携
+
+## 📄 ライセンス
+
+このプロジェクトはMITライセンスの下で公開されています。詳細は[LICENSE](LICENSE)ファイルを参照してください。
+
+## 📞 サポート
+
+- **バグ報告**: GitHub Issues
+- **機能要望**: GitHub Discussions
+- **セキュリティ問題**: security@mywaifu-ai.com
+
+---
+
+**MyWaifu AI** - 次世代AI対話プラットフォーム 🚀

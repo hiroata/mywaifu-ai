@@ -1,8 +1,7 @@
 // src/app/api/chat/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createApiSuccess, createApiError } from "@/lib/utils/index";
-import { chatRequestSchema } from "@/lib/schemas";
+import { createApiSuccess, createApiError, chatRequestSchema } from "@/lib/utils/index";
 import { validateApiRequest, createApiErrorResponse, createApiSuccessResponse, ApiSecurityError } from "@/lib/security/api-security";
 import { logSecurityEvent, SecurityEvent } from "@/lib/security/security-logger";
 import { filterContent } from "@/lib/content-filter";

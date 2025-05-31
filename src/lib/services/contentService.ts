@@ -1,6 +1,6 @@
-// src/lib/ai/contentService.ts
-import { AI_CONFIG, AIProvider } from "./config";
-import { getAIClient } from "./clientFactory";
+// src/lib/services/contentService.ts
+import { AI_CONFIG, AIProvider } from "../ai/config";
+import { getAIClient } from "../ai/clientFactory";
 
 export async function generateAIContent({
   prompt,

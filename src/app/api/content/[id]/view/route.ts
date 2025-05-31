@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { database } from "@/lib/database";
 import { logSecurityEvent, SecurityEvent } from "@/lib/security/security-logger";
 import { isRateLimited, createApiErrorResponse, createApiSuccessResponse } from "@/lib/security/api-security";
 import { validateInput } from "@/lib/content-filter";
@@ -90,10 +90,8 @@ export async function POST(
         }
       );
       return createSecurityError("無効なコンテンツIDです", 400);
-    }
-
-    // コンテンツの存在確認
-    const content = await db.characterContent.findUnique({
+    }    // コンテンツの存在確認
+    const content = await database.characterContent.findUnique({
       where: {
         id: contentId,
       },
@@ -133,10 +131,8 @@ export async function POST(
         }
       );
       return createSecurityError("このコンテンツにアクセスする権限がありません", 403);
-    }
-
-    // 閲覧数を増やす
-    const updatedContent = await db.characterContent.update({
+    }    // 閲覧数を増やす
+    const updatedContent = await database.characterContent.update({
       where: { id: contentId },
       data: { views: { increment: 1 } },
     });

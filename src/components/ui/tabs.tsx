@@ -4,10 +4,11 @@ export interface TabsProps {
   value: string;
   onValueChange: (value: string) => void;
   children: React.ReactNode;
+  className?: string;
 }
 
-export function Tabs({ value, onValueChange, children }: TabsProps) {
-  return <div>{children}</div>;
+export function Tabs({ value, onValueChange, children, className = "" }: TabsProps) {
+  return <div className={`w-full ${className}`}>{children}</div>;
 }
 
 export function TabsList({

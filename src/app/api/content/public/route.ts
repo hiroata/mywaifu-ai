@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { database } from "@/lib/database";
 import { logSecurityEvent, SecurityEvent } from "@/lib/security/security-logger";
 import { isRateLimited, createApiErrorResponse, createApiSuccessResponse } from "@/lib/security/api-security";
 import { validateInput } from "@/lib/content-filter";
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
 
     // コンテンツを取得
     const [contents, total] = await Promise.all([
-      db.characterContent.findMany({
+      database.characterContent.findMany({
         where,
         include: {
           user: {
@@ -145,7 +145,7 @@ export async function GET(request: NextRequest) {
         skip,
         take: limit,
       }),
-      db.characterContent.count({ where }),
+      database.characterContent.count({ where }),
     ]);
 
     // Format response data

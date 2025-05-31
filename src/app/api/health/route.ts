@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,9 +8,8 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       environment: process.env.NODE_ENV,
-      version: process.env.npm_package_version || '0.1.1',
-      services: {
-        database: 'checking...',
+      version: process.env.npm_package_version || '0.1.1',      services: {
+        database: 'removed',
         auth: 'ok',
         websocket: 'ok',
         configuration: 'checking...',
@@ -20,27 +18,14 @@ export async function GET(request: NextRequest) {
           xai: process.env.XAI_API_KEY ? 'configured' : 'missing',
           gemini: process.env.GEMINI_API_KEY ? 'configured' : 'missing'
         }
-      },
-      environment_vars: {
-        DATABASE_URL: process.env.DATABASE_URL ? 'SET' : 'MISSING',
+      },      environment_vars: {
         NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET ? 'SET' : 'MISSING',
         NEXTAUTH_URL: process.env.NEXTAUTH_URL || 'MISSING'
       }
     };
 
-    // データベース接続チェック
-    try {
-      await db.user.count();
-      health.services.database = 'ok';
-    } catch (error) {
-      console.error('Database health check failed:', error);
-      health.services.database = `error: ${error instanceof Error ? error.message : 'Unknown error'}`;
-      health.status = 'degraded';
-    }
-
     // APIキー設定確認
     const requiredEnvVars = [
-      'DATABASE_URL',
       'NEXTAUTH_SECRET',
       'NEXTAUTH_URL'
     ];
@@ -49,6 +34,8 @@ export async function GET(request: NextRequest) {
     if (missingEnvVars.length > 0) {
       health.status = 'degraded';
       health.services.configuration = `Missing: ${missingEnvVars.join(', ')}`;
+    } else {
+      health.services.configuration = 'ok';
     }
 
     return NextResponse.json(health, {

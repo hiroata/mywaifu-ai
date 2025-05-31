@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateAIContent } from "@/lib/ai/contentService";
+import { generateAIContent } from "@/lib/services/contentService";
 
 export async function POST(req: NextRequest) {
   const { prompt, model, provider } = await req.json();

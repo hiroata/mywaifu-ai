@@ -1,9 +1,18 @@
 // src/types/index.ts
-import { User } from "@prisma/client";
 
 export interface Tag {
   id: string;
   name: string;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  name?: string | null;
+  image?: string | null;
+  role: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface ExtendedUser extends User {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { db } from "@/lib/database";
+import { database } from "@/lib/database";
 import { logSecurityEvent, SecurityEvent } from "@/lib/security/security-logger";
 import { isRateLimited, createApiErrorResponse, createApiSuccessResponse } from "@/lib/security/api-security";
 import { validateInput } from "@/lib/content-filter";

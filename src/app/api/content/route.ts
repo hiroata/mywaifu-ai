@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { database } from "@/lib/database";
 import { saveFile, createApiError, createApiSuccess } from "@/lib/utils/index";
-import { validateMediaFile } from "@/lib/utils/validation";
-import { contentSchema } from "@/lib/schemas";
+import { validateMediaFile, contentSchema } from "@/lib/utils/index";
 import { logSecurityEvent, SecurityEvent } from "@/lib/security/security-logger";
 import { processSecureSingleFile } from "@/lib/security/secure-content-api";
 import { isRateLimited, createApiErrorResponse, createApiSuccessResponse } from "@/lib/security/api-security";
@@ -302,7 +301,7 @@ export async function POST(request: NextRequest) {
     }
 
     // データベースにコンテンツを保存
-    const content = await db.characterContent.create({
+    const content = await database.characterContent.create({
       data: {
         title: validatedData.title,
         description: validatedData.description,
@@ -470,10 +469,10 @@ export async function GET(request: NextRequest) {
     }
 
     // コンテンツの総数を取得
-    const total = await db.characterContent.count({ where });
+    const total = await database.characterContent.count({ where });
 
     // ページネーション
-    const contents = await db.characterContent.findMany({
+    const contents = await database.characterContent.findMany({
       where,
       include: {
         user: {

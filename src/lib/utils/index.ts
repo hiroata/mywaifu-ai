@@ -4,6 +4,7 @@ import { twMerge } from "tailwind-merge";
 import { NextResponse } from "next/server";
 import { format, formatDistanceToNow } from "date-fns";
 import { ja } from "date-fns/locale";
+import { z } from "zod";
 
 // fsとpathモジュールはサーバーサイドでのみ使用
 let fs: any;
@@ -356,3 +357,162 @@ export function formatFileSize(bytes: number): string {
 export function absoluteUrl(path: string) {
   return `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}${path}`;
 }
+
+// ====================================
+// バリデーションスキーマ (schemas.tsから統合)
+// ====================================
+
+// チャットAPIリクエストスキーマ
+export const chatRequestSchema = z.object({
+  message: z.string().min(1, "メッセージは必須です").max(1000, "メッセージは1000文字以内で入力してください"),
+  conversationId: z.string().optional(),
+  characterId: z.string().optional(),
+  customCharacterId: z.string().optional(),
+  content: z.string().min(1).max(1000).optional(), // 後方互換性のため
+  imagePrompt: z.string().max(200).optional(),
+  shouldGenerateVoice: z.boolean().optional().default(false),
+  aiProvider: z.enum(["openai", "xai"]).optional().default("openai"),
+});
+
+// コンテンツAPIリクエストスキーマ
+export const contentSchema = z.object({
+  title: z
+    .string()
+    .min(1, "タイトルは必須です")
+    .max(100, "タイトルは100文字以内で入力してください"),
+  description: z
+    .string()
+    .min(1, "説明は必須です")
+    .max(500, "説明は500文字以内で入力してください"),
+  contentType: z.enum(["story", "image", "video"], {
+    invalid_type_error: "コンテンツタイプが無効です",
+  }),
+  characterId: z.string().optional(),
+  customCharacterId: z.string().optional(),
+  isPublic: z.boolean().default(true),
+  storyContent: z.string().optional(),
+});
+
+// キャラクタースキーマ
+export const characterSchema = z.object({
+  name: z.string().min(1, "名前は必須です").max(50, "名前は50文字以内で入力してください"),
+  description: z.string().min(10, "説明は10文字以上で入力してください").max(1000, "説明は1000文字以内で入力してください"),
+  personality: z.string().min(5, "性格は5文字以上で入力してください").max(200, "性格は200文字以内で入力してください"),
+  age: z.number().min(18, "年齢は18歳以上である必要があります").max(100, "年齢は100歳以下である必要があります"),
+  gender: z.enum(["male", "female", "other"]),
+  type: z.enum(["anime", "realistic", "cartoon"]),
+  isPublic: z.boolean().default(true),
+});
+
+// メディアファイルバリデーション
+export const validateMediaFile = (file: File) => {
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  const maxSize = 5 * 1024 * 1024; // 5MB
+
+  if (!allowedTypes.includes(file.type)) {
+    throw new Error('サポートされていないファイル形式です');
+  }
+
+  if (file.size > maxSize) {
+    throw new Error('ファイルサイズが大きすぎます（最大5MB）');
+  }
+
+  return true;
+};
+
+// ユーティリティ関数：スキーマのバリデーション関数を生成
+export function validateSchema<T>(schema: z.ZodType<T>, data: unknown): z.infer<typeof schema> | null {
+  try {
+    return schema.parse(data);
+  } catch (error) {
+    console.error("スキーマバリデーションエラー:", error);
+    return null;
+  }
+}
+
+// フォームデータのバリデーション
+export function validateFormData<T>(schema: z.ZodType<T>, formData: FormData): { success: boolean; data?: T; errors?: string[] } {
+  try {
+    const data = Object.fromEntries(formData.entries());
+    const validatedData = schema.parse(data);
+    return { success: true, data: validatedData };
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { success: false, errors: error.errors.map(e => e.message) };
+    }
+    return { success: false, errors: ['バリデーションエラーが発生しました'] };
+  }
+}
+
+// ====================================
+// コンテンツフィルタリング関数
+// ====================================
+export function sanitizeHtml(input: string): string {
+  if (!input) return '';
+  
+  return input
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+    .replace(/javascript:/gi, '')
+    .replace(/on\w+\s*=/gi, '')
+    .trim();
+}
+
+export function validateInput(input: string, maxLength: number = 1000): {
+  isValid: boolean;
+  error?: string;
+  sanitized: string;
+} {
+  if (!input) {
+    return {
+      isValid: false,
+      error: 'Input is required',
+      sanitized: ''
+    };
+  }
+
+  if (input.length > maxLength) {
+    return {
+      isValid: false,
+      error: `Input exceeds maximum length of ${maxLength} characters`,
+      sanitized: ''
+    };
+  }
+
+  const sanitized = sanitizeHtml(input);
+  
+  return {
+    isValid: true,
+    sanitized
+  };
+}
+
+export function containsInappropriateContent(input: string): boolean {
+  if (!input) return false;
+  
+  const inappropriatePatterns = [
+    /\b(?:fuck|shit|damn|hell|ass|bitch)\b/gi,
+    /\b(?:性的|エロ|アダルト|ポルノ)\b/gi,
+    /\b(?:violence|violent|kill|murder|death)\b/gi,
+    /\b(?:暴力|殺人|死|殺す)\b/gi,
+    /\b(?:hate|racist|discrimination)\b/gi,
+    /\b(?:ヘイト|差別|人種)\b/gi
+  ];
+
+  return inappropriatePatterns.some(pattern => pattern.test(input));
+}
+
+// ====================================
+// セキュリティ機能統合 (security/から統合)
+// ====================================
+// セキュリティ関数は個別にインポートされます
+
+// ====================================
+// AI機能統合 (ai/から統合)
+// ====================================
+// AI関数は個別にインポートされます
+
+// ====================================
+// データベース統合 (database.tsから統合)
+// ====================================
+export { db, mockDb, database, mockData } from '../database';

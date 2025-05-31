@@ -1,6 +1,6 @@
 // src/lib/stripe.ts
 import Stripe from "stripe";
-import { db } from "./db";
+import { db } from "./database";
 
 // Stripe APIクライアント初期化
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
