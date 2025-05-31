@@ -48,7 +48,7 @@ jest.mock('next/navigation', () => ({
 // Mock environment variables
 process.env.NEXTAUTH_URL = 'http://localhost:3000';
 process.env.NEXTAUTH_SECRET = 'test-secret';
-process.env.DATABASE_URL = 'mysql://test:test@localhost:3306/test';
+// データベースは使用しないため、DATABASE_URLは不要
 
 // Mock fetch globally
 global.fetch = jest.fn();

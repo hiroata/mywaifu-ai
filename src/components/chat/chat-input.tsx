@@ -4,7 +4,6 @@
 import { useState, useRef, useEffect, FormEvent } from "react";
 import { useChat } from "@/hooks/use-chat";
 import { useChatStore } from "@/store/chat-store";
-import { useSubscription } from "@/hooks/use-subscription";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -31,10 +30,11 @@ export function ChatInput({ conversationId, onSend, disabled, placeholder }: Cha
   const [generateVoice, setGenerateVoice] = useState(false);
   const [aiProvider, setAiProvider] = useState<"openai" | "xai">("openai");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
   const { sendMessage, isSending } = useChat(conversationId || "");
   const { isLoading } = useChatStore();
-  const { canGenerateImages, canUseVoice } = useSubscription();
+  // 一時的に機能を無効化
+  const canGenerateImages = false;
+  const canUseVoice = false;
   // メッセージ送信ハンドラー
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();

@@ -515,4 +515,5 @@ export function containsInappropriateContent(input: string): boolean {
 // ====================================
 // データベース統合 (database.tsから統合)
 // ====================================
-export { db, mockDb, database, mockData } from '../database';
+// データベース関連のエクスポートは削除されました
+// 代わりに src/lib/storage を使用してください

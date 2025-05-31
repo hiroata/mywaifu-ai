@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { database } from "@/lib/database";
+import { storage } from "@/lib/storage";
 import { logSecurityEvent, SecurityEvent } from "@/lib/security/security-logger";
 import { isRateLimited, createApiErrorResponse, createApiSuccessResponse } from "@/lib/security/api-security";
 import { validateInput } from "@/lib/content-filter";
@@ -89,74 +89,23 @@ export async function POST(
           blocked: true 
         }
       );
-      return createSecurityError("無効なコンテンツIDです", 400);
-    }    // コンテンツの存在確認
-    const content = await database.characterContent.findUnique({
-      where: {
-        id: contentId,
-      },
-    });
+      return createSecurityError("無効なコンテンツIDです", 400);    }
 
-    if (!content) {
-      await logSecurityEvent(
-        SecurityEvent.SUSPICIOUS_REQUEST,
-        request,
-        {
-          action: 'view_nonexistent_content',
-          contentId: contentId
-        },
-        { 
-          userId: session.user.id,
-          severity: 'medium', 
-          blocked: true 
-        }
-      );
-      return createSecurityError("コンテンツが見つかりませんでした", 404);
-    }
-
-    // Check if content is accessible to user (public or owned by user)
-    if (!content.isPublic && content.userId !== session.user.id) {
-      await logSecurityEvent(
-        SecurityEvent.UNAUTHORIZED_ACCESS,
-        request,
-        {
-          action: 'view_private_content',
-          contentId: contentId,
-          contentOwnerId: content.userId
-        },
-        { 
-          userId: session.user.id,
-          severity: 'medium', 
-          blocked: true 
-        }
-      );
-      return createSecurityError("このコンテンツにアクセスする権限がありません", 403);
-    }    // 閲覧数を増やす
-    const updatedContent = await database.characterContent.update({
-      where: { id: contentId },
-      data: { views: { increment: 1 } },
-    });
-
+    // コンテンツ機能は現在無効化されています
     await logSecurityEvent(
-      SecurityEvent.ADMIN_ACTION, // View tracking
+      SecurityEvent.SUSPICIOUS_REQUEST,
       request,
       {
-        contentId: contentId,
-        action: 'content_viewed',
-        newViewCount: updatedContent.views
+        action: 'content_view_disabled',
+        contentId: contentId
       },
       { 
         userId: session.user.id,
-        severity: 'low'
+        severity: 'low', 
+        blocked: true 
       }
     );
-
-    return createSecurityResponse({
-      success: true,
-      data: {
-        views: updatedContent.views,
-      },
-    });
+    return createSecurityError("コンテンツ機能は現在利用できません", 404);
   } catch (error) {
     await logSecurityEvent(
       SecurityEvent.SUSPICIOUS_REQUEST,

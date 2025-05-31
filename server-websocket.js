@@ -24,7 +24,7 @@ process.on('unhandledRejection', (reason, promise) => {
 console.log('🚀 MyWaifuAI サーバー起動中...');
 console.log('環境変数チェック:');
 console.log('NODE_ENV:', process.env.NODE_ENV);
-console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
+// データベースは使用しないため、DATABASE_URLのチェックは不要
 console.log('NEXTAUTH_SECRET:', process.env.NEXTAUTH_SECRET ? 'SET' : 'NOT SET');
 console.log('NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
 console.log('Port:', port);

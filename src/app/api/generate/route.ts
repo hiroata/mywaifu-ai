@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { imageGenerationService } from '@/lib/services/imageGenerator';
+import { imageGenerator } from '@/lib/services/imageGenerator'; // imageGenerationServiceからimageGeneratorに変更
 import { security } from '@/lib/security';
 import { logSecurityEvent, SecurityEvent } from '@/lib/security/security-logger';
 import { z } from 'zod';
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     const { prompt, negativePrompt, style, size, quality, characterId } = validationResult.data;
 
     // ユーザーの生成制限状況をチェック
-    const generationStatus = await imageGenerationService.getUserGenerationStatus(session.user.id);
+    const generationStatus = await imageGenerator.getUserGenerationStatus(session.user.id);
     
     if (!generationStatus.canGenerate) {
       return NextResponse.json(
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
     );
 
     // 画像生成実行
-    const result = await imageGenerationService.generateImage({
+    const result = await imageGenerator.generateImage({
       prompt,
       negativePrompt,
       style,
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
     });
 
     // 生成後の状況を取得
-    const updatedGenerationStatus = await imageGenerationService.getUserGenerationStatus(session.user.id);
+    const updatedGenerationStatus = await imageGenerator.getUserGenerationStatus(session.user.id);
 
     if (result.success) {
       await logSecurityEvent(
@@ -186,7 +186,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const generationStatus = await imageGenerationService.getUserGenerationStatus(session.user.id);
+    const generationStatus = await imageGenerator.getUserGenerationStatus(session.user.id);
     
     return NextResponse.json({
       success: true,

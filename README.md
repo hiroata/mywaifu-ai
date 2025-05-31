@@ -1,228 +1,199 @@
-# MyWaifu AI - Advanced AI Character Platform
+# MyWaifuAI - AI Waifu Chat Platform
 
-MyWaifu AIは、最先端のAI技術を活用したキャラクター生成・対話プラットフォームです。Stable DiffusionとOpenAI GPTを組み合わせ、ユーザーが理想のAIキャラクターとリアルタイムで交流できる環境を提供します。
+MyWaifuAIは、ユーザーがカスタムAIキャラクターと会話できるプラットフォームです。画像生成、音声チャット、パーソナライズされたキャラクター作成機能を提供します。
 
-## 🌟 主要機能
+## 🚀 新しいアーキテクチャ
 
-### AI画像生成
-- **Stable Diffusion XL統合**: 高品質なキャラクター画像生成
-- **プロンプト最適化**: 自動的なプロンプト強化とスタイル調整
-- **マルチプロバイダー対応**: Stability AI、OpenAI DALL-E対応準備
-- **品質制御**: 不適切コンテンツフィルタリングとセーフティチェック
+このプロジェクトは、データベース依存からメモリ内ストレージシステムに移行しました。これにより、セットアップが簡単になり、開発が高速化されます。
 
-### AIチャット
-- **リアルタイム対話**: WebSocket基盤の即座レスポンス
-- **キャラクター記憶**: 過去の会話を記憶した一貫性のある対話
-- **感情表現**: キャラクターの感情状態に基づく応答生成
-- **多言語対応**: 日本語、英語での自然な会話
+### 主要な変更点
 
-### セキュリティ・安全性
-- **コンテンツフィルタリング**: 不適切な内容の自動検出・ブロック
-- **レート制限**: API乱用防止とリソース保護
-- **セキュリティログ**: 全アクティビティの監視・記録
-- **データ保護**: 暗号化とプライバシー保護
+- **Prisma → メモリ内ストレージ**: データベースの代わりにメモリ内ストレージシステムを使用
+- **簡素化された認証**: NextAuthの代わりにヘッダーベースの認証
+- **ファイルベース永続化**: JSONファイルでデータを永続化
 
-### サブスクリプション
-- **柔軟なプラン**: Free、Premium、Ultimateの3段階
-- **Stripe統合**: 安全な決済処理
-- **使用量管理**: プランに応じた機能制限
+## 🛠️ セットアップ
 
-## 🚀 技術スタック
+### 1. 依存関係のインストール
 
-### フロントエンド
-- **Next.js 14**: React App Router、Server Components
-- **TypeScript**: 型安全性とコード品質
-- **Tailwind CSS**: モダンなレスポンシブデザイン
-- **Framer Motion**: 滑らかなアニメーション
-- **Radix UI**: アクセシブルなコンポーネント
-
-### バックエンド
-- **Node.js**: サーバーサイドJavaScript
-- **Prisma**: 型安全なデータベースORM
-- **MySQL**: リレーショナルデータベース
-- **NextAuth.js**: 認証・セッション管理
-- **Socket.io**: リアルタイム通信
-
-### AI・機械学習
-- **OpenAI GPT-4**: 自然言語処理・対話生成
-- **Stability AI**: Stable Diffusion画像生成
-- **Content Filtering**: 不適切コンテンツ検出
-
-### インフラ・DevOps
-- **Docker**: コンテナ化とデプロイメント
-- **Jest**: ユニット・統合テスト
-- **ESLint/Prettier**: コード品質管理
-- **Husky**: Git hooks自動化
-
-## 📦 インストール・セットアップ
-
-### 前提条件
 ```bash
-Node.js 18+ 
-MySQL 8.0+
-Docker (オプション)
+npm install
 ```
 
-### 環境構築
+### 2. 環境変数の設定
+
+`.env.local` ファイルを作成し、以下の環境変数を設定してください：
+
+```env
+# API Keys
+OPENAI_API_KEY=your_openai_api_key
+STABILITY_API_KEY=your_stability_api_key
+HUGGING_FACE_API_KEY=your_hugging_face_api_key
+
+# Stripe (決済処理)
+STRIPE_SECRET_KEY=your_stripe_secret_key
+STRIPE_PREMIUM_PRICE_ID=your_premium_price_id
+STRIPE_ULTIMATE_PRICE_ID=your_ultimate_price_id
+STRIPE_WEBHOOK_SECRET=your_webhook_secret
+
+# アプリケーション設定
+NEXTAUTH_SECRET=your_secret_key
+NEXTAUTH_URL=http://localhost:3000
+
+# ストレージ設定
+STORAGE_PATH=./data
+```
+
+### 3. アプリケーションの起動
+
 ```bash
-# リポジトリクローン
-git clone https://github.com/your-username/mywaifu-ai.git
-cd mywaifu-ai
-
-# 依存関係インストール
-npm install
-
-# 環境変数設定
-cp .env.example .env
-# .envファイルを編集して必要な値を設定
-
-# データベースセットアップ
-npm run prisma:generate
-npm run prisma:push
-
-# 開発サーバー起動
 npm run dev
 ```
 
-### 環境変数設定
-```env
-# データベース
-DATABASE_URL="mysql://username:password@localhost:3306/mywaifu_ai"
+アプリケーションは `http://localhost:3000` で起動します。
 
-# 認証
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-secret-key"
+## 📁 プロジェクト構造
 
-# AI APIs
-OPENAI_API_KEY="your-openai-key"
-STABILITY_API_KEY="your-stability-key"
+```
+src/
+├── app/
+│   └── api/                    # API routes
+│       ├── content/           # キャラクター管理API
+│       └── generate/          # 画像生成API
+├── lib/
+│   ├── storage/              # メモリ内ストレージシステム
+│   ├── services/             # ビジネスロジック
+│   ├── security/             # セキュリティ機能
+│   ├── ai/                   # AI統合
+│   ├── stable-diffusion.ts   # 画像生成
+│   ├── stripe.ts             # 決済処理
+│   └── utils/                # ユーティリティ
+└── __tests__/                # テストファイル
+```
 
-# 決済
-STRIPE_SECRET_KEY="your-stripe-secret"
-STRIPE_PUBLISHABLE_KEY="your-stripe-public"
+## 🔧 主要機能
 
-# ファイルストレージ (オプション)
-CLOUDINARY_URL="your-cloudinary-url"
+### 1. ストレージシステム
+
+メモリ内ストレージシステムは以下の機能を提供します：
+
+- **ユーザー管理**: 登録、認証、プロフィール管理
+- **キャラクター管理**: AI キャラクターの作成・編集・削除
+- **サブスクリプション管理**: プラン管理、制限チェック
+- **ログ管理**: セキュリティログ、生成ログの記録
+- **ファイル永続化**: JSONファイルでのデータ保存
+
+### 2. 画像生成サービス
+
+```typescript
+import imageGenerationService from '@/lib/services/imageGenerator';
+
+const result = await imageGenerationService.generateImage({
+  prompt: "beautiful anime girl",
+  userId: "user-id",
+  style: "anime"
+});
+```
+
+### 3. セキュリティ機能
+
+- レート制限
+- 不適切コンテンツフィルタリング
+- セキュリティイベントログ
+- ファイルアップロード検証
+
+### 4. 決済統合（Stripe）
+
+```typescript
+import { createCheckoutSession } from '@/lib/stripe';
+
+const session = await createCheckoutSession({
+  userId: "user-id",
+  planId: "PREMIUM",
+  returnUrl: "http://localhost:3000"
+});
 ```
 
 ## 🧪 テスト
 
-### テスト実行
 ```bash
 # 全テスト実行
 npm test
 
-# 監視モード
-npm run test:watch
+# 特定のテストファイル実行
+npm test imageGenerator.test.ts
 
-# カバレッジ測定
+# カバレッジ付きテスト実行
 npm run test:coverage
 ```
 
-### テスト種類
-- **ユニットテスト**: 個別機能の動作確認
-- **統合テスト**: API エンドポイントの検証
-- **セキュリティテスト**: 脆弱性スキャン
+## 📦 本番環境へのデプロイ
 
-## 🛡️ セキュリティ機能
+### Vercel
 
-### コンテンツセーフティ
-- 不適切プロンプト検出・ブロック
-- 画像コンテンツ自動審査
-- ユーザー報告システム
-
-### API保護
-- レート制限による乱用防止
-- 認証トークン検証
-- CORS設定とセキュリティヘッダー
-
-### データ保護
-- パスワードハッシュ化
-- セッション管理
-- 個人情報暗号化
-
-## 📊 監視・ログ
-
-### セキュリティログ
-- 不審なアクセス検出
-- API使用状況追跡
-- エラー・例外記録
-
-### パフォーマンス監視
-- レスポンス時間測定
-- リソース使用量追跡
-- ユーザー行動分析
-
-## 🚀 デプロイメント
-
-### Docker利用
 ```bash
-# イメージビルド
-npm run build:docker
+# Vercel CLIをインストール
+npm i -g vercel
 
-# コンテナ起動
-docker-compose up -d
+# デプロイ
+vercel --prod
 ```
 
-### 本番環境デプロイ
-```bash
-# 本番ビルド
-npm run build:production
+### 環境変数の設定
 
-# 本番サーバー起動
-npm run start:production
-```
+本番環境では以下の環境変数を必ず設定してください：
 
-## 📈 パフォーマンス
+- `OPENAI_API_KEY`
+- `STABILITY_API_KEY`
+- `STRIPE_SECRET_KEY`
+- `NEXTAUTH_SECRET`
 
-### 最適化技術
-- **Server Components**: 初期ロード高速化
-- **Image Optimization**: 自動画像圧縮・配信
-- **Caching Strategy**: 効果的なキャッシング
-- **Code Splitting**: 必要なコードのみロード
+## 🔒 セキュリティ考慮事項
 
-### スケーラビリティ
-- 水平スケーリング対応
-- データベース読み取り分散
-- CDN統合による配信最適化
+1. **API キーの保護**: 環境変数を使用してAPI キーを保護
+2. **レート制限**: 各エンドポイントにレート制限を実装
+3. **入力検証**: ユーザー入力の適切な検証
+4. **認証**: ヘッダーベースの認証システム
+5. **ログ監視**: セキュリティイベントの記録と監視
 
-## 🤝 コントリビューション
+## 🤝 貢献
 
-### 開発参加
-1. フォークを作成
-2. フィーチャーブランチ作成
-3. 変更をコミット
-4. プルリクエスト作成
-
-### コーディング規約
-- TypeScript strict mode
-- ESLint/Prettier準拠
-- コミットメッセージ規約
-
-## 📋 ロードマップ
-
-### 近日実装予定
-- [ ] キャラクター音声生成
-- [ ] ARアバター表示
-- [ ] グループチャット機能
-- [ ] キャラクター市場
-
-### 長期計画
-- [ ] モバイルアプリ開発
-- [ ] VR対応
-- [ ] マルチモーダルAI統合
-- [ ] ブロックチェーン連携
+1. このリポジトリをフォーク
+2. 機能ブランチを作成 (`git checkout -b feature/amazing-feature`)
+3. 変更をコミット (`git commit -m 'Add amazing feature'`)
+4. ブランチにプッシュ (`git push origin feature/amazing-feature`)
+5. プルリクエストを開く
 
 ## 📄 ライセンス
 
-このプロジェクトはMITライセンスの下で公開されています。詳細は[LICENSE](LICENSE)ファイルを参照してください。
+このプロジェクトはMITライセンスの下で公開されています。詳細は `LICENSE` ファイルをご覧ください。
 
-## 📞 サポート
+## 🆘 トラブルシューティング
 
-- **バグ報告**: GitHub Issues
-- **機能要望**: GitHub Discussions
-- **セキュリティ問題**: security@mywaifu-ai.com
+### よくある問題
+
+1. **メモリ不足エラー**
+   - Node.jsのメモリ制限を増やす: `node --max-old-space-size=4096`
+
+2. **画像生成エラー**
+   - Stability AI API キーが正しく設定されているか確認
+   - API制限に達していないか確認
+
+3. **認証エラー**
+   - `x-user-id` ヘッダーが正しく設定されているか確認
+
+### サポート
+
+問題が発生した場合は、GitHubのIssuesセクションで報告してください。
+
+## 🚀 今後の機能
+
+- [ ] リアルタイム音声チャット
+- [ ] より高度なAIパーソナリティ
+- [ ] モバイルアプリ
+- [ ] ソーシャル機能の拡張
+- [ ] マルチプレイヤー機能
 
 ---
 
-**MyWaifu AI** - 次世代AI対話プラットフォーム 🚀
+**注意**: このプロジェクトは開発目的であり、本番環境で使用する前に適切なセキュリティレビューを行ってください。

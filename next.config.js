@@ -15,7 +15,7 @@ const nextConfig = {  // プロダクション向け設定
     removeConsole: process.env.NODE_ENV === 'production',
   },  // Vercel最適化設定
   experimental: {
-    serverComponentsExternalPackages: ['@prisma/client'],
+    // データベースは使用しないため、外部パッケージ設定も不要
   },
   // Standalone出力（Docker用）
   output: process.env.BUILD_STANDALONE === 'true' ? 'standalone' : undefined,

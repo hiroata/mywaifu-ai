@@ -12,7 +12,6 @@ echo "🚀 MyWaifu-AI プロダクションデプロイを開始します..."
 echo "🔍 環境変数を確認中..."
 REQUIRED_VARS=(
     "NODE_ENV"
-    "DATABASE_URL"
     "NEXTAUTH_SECRET"
     "NEXTAUTH_URL"
 )

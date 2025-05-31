@@ -44,7 +44,7 @@ echo "🔍 必須環境変数を確認中..."
 MISSING_VARS=0
 
 check_env_var "NODE_ENV" || ((MISSING_VARS++))
-check_env_var "DATABASE_URL" || ((MISSING_VARS++))
+# データベースは使用しないため、DATABASE_URLのチェックは不要
 check_env_var "NEXTAUTH_SECRET" || ((MISSING_VARS++))
 check_env_var "NEXTAUTH_URL" || ((MISSING_VARS++))
 
@@ -88,37 +88,8 @@ echo "  - HTTPS強制: $FORCE_HTTPS"
 echo "  - セキュアクッキー: $SECURE_COOKIES"
 echo "  - コンテンツフィルタ厳格モード: $CONTENT_FILTER_STRICT_MODE"
 
-# データベース接続テスト
-if [ -n "$DATABASE_URL" ]; then
-    echo "🗄️ データベース接続をテスト中..."
-    if command -v psql >/dev/null 2>&1; then
-        if psql "$DATABASE_URL" -c "SELECT 1;" >/dev/null 2>&1; then
-            echo "✅ データベース接続成功"
-        else
-            echo "❌ データベース接続失敗"
-            ((MISSING_VARS++))
-        fi
-    else
-        echo "⚠️ psqlがインストールされていないため、データベース接続テストをスキップ"
-    fi
-fi
-
-# Prisma設定の確認
-echo "🔄 Prisma設定を確認中..."
-if [ -f "prisma/schema.prisma" ]; then
-    echo "✅ Prismaスキーマファイルが存在します"
-    
-    # Prismaクライアント生成
-    echo "🔧 Prismaクライアントを生成中..."
-    npx prisma generate
-    
-    # マイグレーションの確認
-    if [ "$NODE_ENV" = "production" ]; then
-        echo "🚀 プロダクション用マイグレーションを実行中..."
-        npx prisma migrate deploy
-    else
-        echo "⚠️ 開発環境のため、マイグレーションをスキップ"
-    fi
+# データベースは使用しないため、データベース接続テストとPrisma設定は不要
+echo "✅ データベースレス構成のため、データベース関連のセットアップをスキップ"
 else
     echo "❌ Prismaスキーマファイルが見つかりません"
     ((MISSING_VARS++))

@@ -1,52 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { database } from "@/lib/database";
+import { storage } from "@/lib/storage";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  try {
-    const { id } = params;
+  try {    const { id } = params;
 
-    // 公開キャラクターを取得（認証不要）
-    const character = await database.character.findFirst({
-      where: {
-        OR: [
-          { id },
-          { id: `character-${id}` }, // seed.tsでのID形式に対応
-        ],
-        isPublic: true,
-      },
-      include: {
-        tags: true,
-      },
-    });
-
-    // キャラクターが見つからない場合はカスタムキャラクターも確認
-    if (!character) {
-      const customCharacter = await database.customCharacter.findFirst({
-        where: {
-          OR: [
-            { id },
-            { id: `character-${id}` },
-          ],
-          isPublic: true,
-        },
-        include: {
-          tags: true,
-        },
-      });
-
-      if (customCharacter) {
-        return NextResponse.json({
-          success: true,
-          data: {
-            ...customCharacter,
-            isCustom: true,
-          },
-        });
-      }
-    }
+    // 公開キャラクターをストレージから取得
+    const character = await storage.findCharacterById(id);
 
     if (!character) {
       return NextResponse.json(
@@ -58,10 +20,22 @@ export async function GET(
       );
     }
 
+    // 公開キャラクターのみ返す
+    if (!character.isPublic) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "このキャラクターは非公開です",
+        },
+        { status: 404 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
       data: {
         ...character,
+        tags: [], // ストレージシステムではタグ機能は無効化
         isCustom: false,
       },
     });
