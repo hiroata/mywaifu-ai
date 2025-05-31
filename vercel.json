@@ -7,7 +7,8 @@
   "devCommand": "npm run dev",
   "env": {
     "NODE_ENV": "production"
-  },  "build": {
+  },
+  "build": {
     "env": {
       "NEXTAUTH_SECRET": "@nextauth_secret",
       "NEXTAUTH_URL": "@nextauth_url",
@@ -27,6 +28,25 @@
     {
       "src": "/api/(.*)",
       "dest": "/api/$1"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
     }
   ]
 }

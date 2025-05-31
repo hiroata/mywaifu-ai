@@ -38,4 +38,3 @@ echo "🔗 ClamAV接続テスト..."
 sudo clamdscan --version
 
 echo "✅ ClamAV設定が完了しました！"
-echo "📝 注意: Render.comなどのクラウドサービスでは、別途ClamAVサービスの設定が必要です。"

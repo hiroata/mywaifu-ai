@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Production build script for Render.com
+# Production build script
 set -e
 
 echo "🚀 Starting production build..."
