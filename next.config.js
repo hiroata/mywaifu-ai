@@ -6,14 +6,16 @@ const nextConfig = {  // プロダクション向け設定
   eslint: {
     ignoreDuringBuilds: true, // ESLint警告は無視してビルド続行
   },
-  swcMinify: true,
-  images: {
-    unoptimized: true,
-    domains: ['localhost', 'your-domain.com'], // 許可されたドメインのみ
+  swcMinify: true,  images: {
+    unoptimized: false, // Vercelでは画像最適化を有効に
+    domains: ['localhost', 'your-domain.vercel.app'], // Vercelドメインに更新
   },
   // パフォーマンス最適化
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
+  },  // Vercel最適化設定
+  experimental: {
+    serverComponentsExternalPackages: ['@prisma/client'],
   },
   // Standalone出力（Docker用）
   output: process.env.BUILD_STANDALONE === 'true' ? 'standalone' : undefined,
